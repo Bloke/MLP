@@ -1,0 +1,6 @@
+MLP KNOWN ISSUES
+================
+
+* If using the 'Power users can change a rendition's language or article'
+feature, if you change a rendition's language or article ID then the 'View'
+link will not be updated until you reload the article.

@@ -1,0 +1,61 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="<txp:l10n_get_lang/>" lang="<txp:l10n_get_lang/>">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+	<title><txp:sitename />: <txp:error_status /></title>
+
+	<txp:feed_link flavor="atom" format="link" label="Atom" />
+	<txp:feed_link flavor="rss" format="link" label="RSS" />
+
+	<txp:css format="link" />
+</head>
+<body>
+
+<!-- accessibility -->
+<div id="accessibility">
+	<ul>
+		<li><a href="#content">Go to content</a></li>
+		<li><a href="#sidebar-1">Go to navigation</a></li>
+		<li><a href="#sidebar-2">Go to search</a></li>
+	</ul>
+</div>
+
+<div id="container">
+
+<!-- head -->
+	<div id="head">
+		<h1><txp:link_to_home><txp:sitename /></txp:link_to_home></h1>
+		<h2><txp:site_slogan /></h2>
+	</div>
+
+<!-- left -->
+	<div id="sidebar-1">
+	<txp:linklist wraptag="p" />
+	</div>
+
+<!-- right -->
+	<div id="sidebar-2">
+		<txp:search_input label="Search" wraptag="p" />
+
+		<txp:popup type="c" label="Browse" wraptag="p" />
+
+		<p><txp:feed_link label="RSS" /> / <txp:feed_link flavor="atom" label="Atom" /></p>
+
+		<p><img src="<txp:site_url />textpattern/txp_img/txp_slug105x45.gif" width="105" height="45" alt="Textpattern" title="" /></p>
+	</div>
+
+<!-- center -->
+	<div id="content">
+		<h3 style="font: 1.3em Georgia, Times, serif;"><txp:error_status /></h3>
+		<p><txp:error_message /></p>
+        <txp:l10n_lang_list on404="1" title="##language_list_title##"/>
+	</div>
+
+<!-- footer -->
+	<div id="foot"> </div>
+
+</div>
+
+</body>
+</html>

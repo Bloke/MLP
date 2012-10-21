@@ -1,0 +1,243 @@
+                    How to make your plugin MLP compatible.
+
+You need to take some simple steps to make your plugins MLP compatible. 
+Note that by so doing, your plugin will be able to operate with or without
+the MLP Pack. 
+
+There are two areas in which you can make your plugin compatible.
+
+1) String localisation.
+If you adhere to these guidelines and the MLP Pack happens to be installed 
+along with your plugin then the administrative users of the site will be 
+able to easily localise your plugins' strings.
+
+2) Access to localised content.
+If you adhere to these guidelines then if the MLP Pack is installed, your 
+plugin will automatically be supplied with localised content -- articles; 
+category or section titles; image meta-data (captions and alt-text); link 
+or file descriptions.
+
+
+Section 1: String Localisation.
+===============================
+
+Example code is given below for an imaginary plugin 
+called 'sed_example_plugin_name'.
+
+
+Here are the steps...
+
+1) Have an internal array of named strings.
+2) Register a callback routine.
+3) Copy the callback routine, changing details as needed. This will pass your 
+   array of strings to the MLP pack and register them as owned by your plugin.
+4) Write, or modify the example, plugin-specific gTxt() function that... 
+	4a) tries to get the string from the $textarray and if that fails,
+	4b) tries to get the string from it's private array and if that fails,
+    4c) returns the name of the string you were trying to access.
+	4d) does any variale substitutions that are needed 
+5) Use the specific gTxt() function consistently throughout your pluign.
+
+
+/*==============================================================================
+                                 EXAMPLE CODE
+
+Here is an example skeleton that meets the above requirements. 
+
+I am using the prefix sed_example here for my routines but you *must* change 
+that for your own plugins.
+==============================================================================*/
+
+/*------------------------- PART 1: Define the strings -----------------------*/
+
+#
+#	Define the string that will get prefixed to your strings when they are 
+# injected into the txp_lang table.
+#
+# Keep it less than 10 chars.
+# Change both parts of the define for your plugins.
+#
+define( 'SED_EXAMPLE_PREFIX' , 'sed_xmpl' );
+
+
+#
+#	Define the array of strings.
+#
+# Change the name and content of the array for your plugin.
+# Variable substitutions will be done in your gTxt() routine, not here.
+#
+$sed_example_strings = array(	
+	'string1'	=> 'Welcome {name}!',
+	'string2'	=> 'See you again {time}.',
+	);
+
+
+
+/*------------------------ PART 2: Register A Callback -----------------------*/
+
+#
+#	Register the callback for the enumerate string event.
+# If the MLP pack is not present and active this will NOT get called.
+#
+register_callback( 'sed_example_enumerate_strings' , 'l10n.enumerate_strings' );
+
+
+/*---------------------- PART 3: Registration Callback -----------------------*/
+
+#
+#	Here's a callback routine used to register the above strings with
+# the MLP Pack (if installed).
+#
+function sed_example_enumerate_strings($event , $step='' , $pre=0)
+	{
+	global $sed_example_strings;
+	$r = array	(
+				'owner'		=> 'sed_example_plugin_name',	#	Change to your plugin's name
+				'prefix'	=> SED_EXAMPLE_PREFIX,			#	Its unique string prefix
+				'lang'		=> 'en-gb',						#	The language of the initial strings.
+				'event'		=> 'public',					#	public/admin/common = which interface the strings will be loaded into
+				'strings'	=> $sed_example_strings,		#	The strings themselves.
+				);
+	return $r;
+	}
+
+/*--------------------- PART 4: Plugin Specific gTxt() -----------------------*/
+
+function sed_example_gTxt( $what , $args = array() )
+	{
+	global $textarray;
+	global $sed_example_strings;
+
+	#
+	#	Prepare the prefixed key for use...
+	#
+	$key = SED_EXAMPLE_PREFIX . '-' . $what;
+	$key = strtolower($key);
+
+	#
+	#	Grab from the global textarray (possibly edited by MLP) if we can...
+	#
+	if(isset($textarray[$key]))
+		{
+		$str = $textarray[$key];
+		}
+	else
+		{
+		#
+		#	The string isn't in the localised $textarray so fallback to using 
+		# the string array in the plugin (which is not prefixed.)
+		#
+		$key = strtolower($what);
+
+		if( isset( $sed_example_strings[$key] ) )
+			$str = $sed_example_strings[$key];
+		else
+			#
+			#	Fallback to returning the key if the string is not present...
+			#
+			$str = $what;
+		}
+
+	#
+	#	If needed, perform substitutions...
+	#
+	if( !empty($args) )
+		$str = strtr( $str , $args );
+
+	return $str;
+	}
+
+/*==============================================================================
+                                END EXAMPLE CODE
+==============================================================================*/
+
+
+
+Section 2: Access Localised Content
+===================================
+
+The MLP Pack creates tables with localised content in them from the master
+textpattern table. The pack then uses a table-name remapping on the public
+interface to serve language specific content to plugins through the DB layer.
+
+This remapping is not done on the admin side.
+
+Although a language-specific temporary textpattern table could have been created
+to hide the original textpattern table for each client connection this would put
+a continuous un-needed load on the server so the MLP pack maintains a set of 
+copies of the textpattern table -- one table per site language --  and then 
+relies on a simple function to remap any queries against the 'textpattern' table
+to the copy with content in that language.
+
+If your plugin uses any of the safe_blah() functions (except safe_query) or the 
+fetch() routine; then this will happen without your needing to do anything special.
+
+However, if your plugin accesses the textpattern table via a call to safe_query()
+or any of the other routines in txplib_db.php then it will work, but will 
+potentially retreive rows for languages that the site visitor is not using.
+
+
+To get around this you can make a few simple adjustments...
+
+a) use the built-in DB access functions found in textpattern/lib/txplib_db.php
+rather than going to the DB via PHP's MySQL access routines.
+
+
+b) Don't use the PFX constant.
+Huh? Yes, if your plugin is meant for TxP 4.0.4 or above then this is easy as you 
+can simply switch all PFX prefixing over to the safe_pfx() or safe_pfx_j() 
+routines. The MLP Pack currently uses these to do some crafty table name changing
+to give access to localised content.
+
+For plugins that need to work in TxP versions prior to 4.0.4 and you use the PFX 
+constant then you can use the following routine to prefix your tables (and 
+redirect to localised tables if the MLP Pack is present)...
+
+
+/*==============================================================================
+                                 EXAMPLE CODE
+
+Here is an example skeleton that meets the above requirements. 
+
+I am using the prefix sed_example_ here for my routines but you *must* change 
+that for your own plugins.
+==============================================================================*/
+
+function sed_example_pfx( $table )
+	{
+	if( is_callable( 'safe_pfx' ) )
+		$table = safe_pfx( $table );
+	else
+		$table = PFX.$table;
+
+	return $table;
+	}
+
+(Remember to rename the function according to your plugin's naming convention).
+
+Now use this call whenever you need to construct the name of a table for a call
+to safe_query().
+
+
+Or...
+
+
+c) Try not to use the safe_query() routine but rather use the specific routines
+for the operations you are trying to perform (this is not possible for all queries)
+
+
+For example, instead of doing...
+
+safe_query( "select * from ".PFX."textpattern where `ID`='$my_id'" );
+
+
+either use your prefix routine... 
+
+$table = sed_example_pfx( 'textpattern' );
+safe_query( "select * from $table where `ID`='$my_id'" );
+
+
+or use a more specfic access routine...
+
+safe_row( '*', 'textpattern', "`ID`='$my_id'" );
+

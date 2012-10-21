@@ -1,0 +1,83 @@
+l10n MLP Pack
+Frequently Asked Questions.
+
+================================================================================
+
+Q-001.	zem_contact_lang-mlp is not listed under the MLP>Plugins tab.
+A-001.	Make sure that zem_contact_lang-mlp is enabled under the 
+	admin>plugins tab. 
+
+================================================================================
+
+Q-002.	Some files are listed as modified in the admin>diagnostics tab.
+A-002.	Yes, the MLP Pack is not a pure plugin and does modify some of the TxP 
+	core files...
+	lib/txplib_db.php (mandatory)
+	publish.php (optional)
+	The changes in the db layer are required for the MLP Pack to function but the
+	changes made in publish.php are only needed in your system if you want to use 
+	TxP's previous and next tags in your site.
+
+================================================================================
+
+Q-003.	Sometimes my site seems to 'switch' to another language without me doing
+	anything: what could be causing this?
+A-003.	This could be due to...
+			a) Browser caching.
+			b) Not having cookies enabled in your browser for the site.
+	Because your browser caches pages by URL and not every URL output from an MLP
+	pack site necessarily has the language code embedded in it, the browser may be
+	using an 'old' cached version of the page which you previously viewed in 
+	another lanugage. You can see if this is the case by simply refreshing the 
+	page while bypassing the cache (Shift-refresh in Firefox).
+
+	However, most links output from MLP are now post-processed to insert the lang
+	code to stop browsers doing this.
+
+	Alternately, if you have not enabled cookies for the site then the session
+	cookie that is used to track your last language choice will be unavailable. 
+	If this happens then the site will try to serve the page according to these
+	priorities...
+
+		i)	according to the language specified in the url (if any is specified, 
+			and if it exists on this site) 
+
+	else
+
+		ii)	serve one of the languages asked for by the browser in its accept-language
+			header. (In Firefox go to Preferences > Advanced > General > Languages to
+			see the list of headers sent to the site and to edit their priority.)
+
+	else
+
+		iii) serve the page in the site's default language (if possible)
+
+	else
+
+		iv) 404 page error.
+
+================================================================================
+
+Q-004.	How come the text of my articles (renditions) isn't rendering correctly?
+A-004.	This is most likely down to the fact that your site has styled the page
+	with a font that doesn't support all of the glyphs needed to render your article
+	properly, or that such a font isn't present on your system.
+
+		For example, to render polytonic Greek you need a font with an extended set
+	of diacritic marks. Your site visitors will need such a font installed on their
+	OS and you need to setup your style sheet to reference fonts that contain these
+	marks too (unless the visitor has overridden the site styling with their own).
+
+	Alternatively, the encoding of your source file used for the content might not
+	be quite correct.
+
+================================================================================
+
+Q-005.	Are there any known problems?
+A-005.	Yes. 
+
+	* When on the write tab, switching views (to HTML or Preview) looses track of the 
+	language setting.
+	* Subdirectory installations are **not** supported.
+
+

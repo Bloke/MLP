@@ -1,0 +1,68 @@
+/*
+l10n styles for the article view tab...
+*/
+
+.clone-link		{ float: left; }
+.delete-link	{ float: right; }
+.status_1		{ background: #ccf; }
+.status_2		{ background: #eee; }
+.status_3		{ background: #fc9; }
+.status_4		{ background: #fff; }
+.status_5		{ background: #ff9; }
+.fully_visible	{ background: #cfc; }
+.empty			{ background: #eee; }
+.warning		{ background: #f99; }
+.count			{ text-align: right; background: #fff; border-top-width: 2px; font-weight: bold;  }
+table#l10n_articles_table
+	{
+	margin: 0 auto;
+	border-color: #999;
+	border-style: solid;
+	border-width: 1px 1px 0 0;
+	}
+table#l10n_articles_table td, table#l10n_articles_table th
+	{
+	padding: 2px 4px;
+	border-color: #999;
+	border-style: solid;
+	border-width: 0 0 1px 1px;
+	width: 150px;
+	}
+.id				{ text-align: right; width: 80px !important; }
+td.legend dt	{ margin: 2px 2px 2px 10px; padding: 3px 5px 0; border: 1px solid #333; float:left; }
+td.legend dd	{ margin: 2px 0;            padding: 3px 0 0; float:left; }
+
+/*
+l10n styles for other tabs...
+*/
+
+.l10n_values_list	{ float: right; width: 50%; }
+.l10n_string_list	{ float: left; width: 25%; }
+.l10n_subtab		{ padding: 0 30px; }
+.l10n_list			{ float: left; width: 50%; }
+.l10n_edit			{ float: right; width: 50%; }
+.l10n_owner_list	{ float: left; width: 20%; }
+.l10n_export_list	{ float: left; width: 40%; }
+.l10n_import_list	{ float: right; width: 40%; }
+.l10n_bordered		{ border: 1px solid #ccc; padding:1em; margin:1em; }
+.l10n_plugin_list	{ float: left; width: 25%; }
+.l10n_string_edit	{ width: 90%; height: 6em;}
+
+.l10n_extensions	{ text-align: center; }
+.l10n_extensions fieldset 		{ margin: 0px auto; }
+
+.l10n_hidden		{ display: none; }
+.l10n_visible		{ display: block; }
+.l10n_highlite		{ color:blue; background-color:yellow; }
+
+div#l10n-filters	{ margin: 0 auto 10px; text-align: center; }
+
+textarea#l10n_string_import {width: 95%;float:left;}
+
+table#l10n_articles_table .empty {display: table-cell;}
+table#l10n_clone_table,
+table#list {margin: 0 auto;}
+
+#l10n_tabs_row a.active,
+#l10n_control a.active {background-color: #eee;}
+
