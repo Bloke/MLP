@@ -15,50 +15,50 @@ MLP
 There are a set of three plugins and various other files that comprise the pack. 
 Here's the file tree...
 
-MLP
- |-- Licence (GNU GPL licence text)
- |-- README.md (this file)
- |-- KNOWN_ISSUES.txt (current bug list: please check before submitting bug report)
- |
- |-- example pages (example textpattern pages using l10n tags)
- |        |
- |        |-- default.txt
- |        |-- archive.txt
- |        |-- error_default.txt
- |
- |-- plugins (you will need to install these plugins)
- |        |
- |        |-- l10n.txt (the main l10n plugin, and compressed version)
- |        |-- gbp_admin_library.txt (Graeme's admin lib, and compressed version)
- |        |-- zem_contact_lang-mlp.txt (l10n compatible strings lib)
- |        |
- |        |-- sources (for GNU GPL completeness)
- |                |-- l10n.php (source code for the l10n.txt file)
- |                |-- gbp_admin_library.php (source code for the gbp_admin_library.txt file)
- |                |-- zem_contact_lang_mlp.php (source code for the zem_contact_lang_mlp.txt file)
- | 
- |-- textpattern (you will need to copy these files into your Textpattern installation)
-             | 
-             |-- l10n.css (the MLP Pack's css file)
-             |
-             |-- txp_img (l10n images in here)
-             |       |
-             |       |-- l10n_clone.png
-             |       |-- l10n_clone_all.png
-             |       |-- l10n_delete.png
-             |   
-             |-- lib (files used by the l10n pluign)
-                  |
-                  |-- ** l10n_langs.php (ISO codes and names)
-                  |-- txplib_db.php (modified db layer supporting MLP) 
-                  |-- l10n_base.php (the basic public+admin file)
-                  |-- l10n_admin.php (extra admin routines)
-                  |-- l10n_admin_classes.php (classes used only admin side)
-                  |-- ** l10n_default_strings.php (Declares which language file to use by default)
-                  |-- ** l10n_en-gb_strings.php (English (GB) strings for MLP Pack)
-                  |-- ** l10n_el-gr_strings.php (Greek strings for MLP Pack)
-
-		  ** => Edit these files if you need to.
+	MLP
+	 |-- Licence (GNU GPL licence text)
+	 |-- README.md (this file)
+	 |-- KNOWN_ISSUES.txt (current bug list: please check before submitting bug report)
+	 |
+	 |-- example pages (example textpattern pages using l10n tags)
+	 |        |
+	 |        |-- default.txt
+	 |        |-- archive.txt
+	 |        |-- error_default.txt
+	 |
+	 |-- plugins (you will need to install these plugins)
+	 |        |
+	 |        |-- l10n.txt (the main l10n plugin, and compressed version)
+	 |        |-- gbp_admin_library.txt (Graeme's admin lib, and compressed version)
+	 |        |-- zem_contact_lang-mlp.txt (l10n compatible strings lib)
+	 |        |
+	 |        |-- sources (for GNU GPL completeness)
+	 |                |-- l10n.php (source code for the l10n.txt file)
+	 |                |-- gbp_admin_library.php (source code for the gbp_admin_library.txt file)
+	 |                |-- zem_contact_lang_mlp.php (source code for the zem_contact_lang_mlp.txt file)
+	 | 
+	 |-- textpattern (you will need to copy these files into your Textpattern installation)
+	             | 
+	             |-- l10n.css (the MLP Pack's css file)
+	             |
+	             |-- txp_img (l10n images in here)
+	             |       |
+	             |       |-- l10n_clone.png
+	             |       |-- l10n_clone_all.png
+	             |       |-- l10n_delete.png
+	             |   
+	             |-- lib (files used by the l10n pluign)
+	                  |
+	                  |-- ** l10n_langs.php (ISO codes and names)
+	                  |-- txplib_db.php (modified db layer supporting MLP) 
+	                  |-- l10n_base.php (the basic public+admin file)
+	                  |-- l10n_admin.php (extra admin routines)
+	                  |-- l10n_admin_classes.php (classes used only admin side)
+	                  |-- ** l10n_default_strings.php (Declares which language file to use by default)
+	                  |-- ** l10n_en-gb_strings.php (English (GB) strings for MLP Pack)
+	                  |-- ** l10n_el-gr_strings.php (Greek strings for MLP Pack)
+	
+			  ** => Edit these files if you need to.
 
 
 
