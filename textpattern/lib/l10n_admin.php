@@ -581,15 +581,6 @@ function _l10n_process_admin_page($page)
 				'4.5.0' => '<div id="messagepane">',
 				);
 	_l10n_inject_stuff($page, $ls, $fs, sp);
-	#
-	#	... and to the bottom of the admin form ...
-	#
-	$fs = array	(
-				'4.0.4' => '</form><a href="http://www.textpattern.com"><img src="txp_img/carver.gif" width="60" height="48" border="0" alt="" /></a>',
-				'4.0.6' => '</form>'.n.'<a href="http://www.textpattern.com"><img src="txp_img/carver.gif" width="60" height="48" border="0" alt="" /></a>',
-				'4.5.0' => '<div class="txp-footer">',
-				);
-	_l10n_inject_stuff($page, $ls, $fs, br.n, true);
 
 	$page = _l10n_rename_articles_tab($page);
 
