@@ -98,6 +98,7 @@ $l10n_default_strings = array(
 	'l10n-languages'                   => 'Γλώσσες',
 	'l10n-legend_warning'              => 'Προειδοποίηση/Σφάλμα',
 	'l10n-legend_fully_visible'        => 'Εμφάνηση σε όλες τις Γλώσσες',
+	'l10n-list_sort_order'             => 'MLP table sort order',
 	'l10n-localised'                   => ' Τοπικοποιημένο',
 	'l10n-ltr'                         => 'Α.π.Δ. >',
 	'l10n-matches'                     => 'συμβολοσειρές ταιριάζουν.',

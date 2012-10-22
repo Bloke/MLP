@@ -1285,21 +1285,21 @@ function l10n_language_marker( $atts )
 # --- END PLUGIN CODE ---
 /*
 # --- BEGIN PLUGIN CSS ---
-	<style type="text/css">
-	div#l10n_help td { vertical-align:top; }
-	div#l10n_help code { font-weight:bold; font: 105%/130% "Courier New", courier, monospace; background-color: #FFFFCC;}
-	div#l10n_help .code_tag{ font-weight:normal; border:1px dotted #999; background-color: #f0e68c; display:block; margin:10px 10px 20px; padding:10px; }
-	div#l10n_help a:link, div#l10n_help a:visited { color: blue; text-decoration: none; border-bottom: 1px solid blue; padding-bottom:1px;}
-	div#l10n_help a:hover, div#l10n_help a:active { color: blue; text-decoration: none; border-bottom: 2px solid blue; padding-bottom:1px;}
-	div#l10n_help h1 { color: #369; font: 20px Georgia, sans-serif; margin: 0; text-align: center; }
-	div#l10n_help h2 { border-bottom: 2px solid black; padding:10px 0 0; color: #369; font: 17px Georgia, sans-serif; }
-	div#l10n_help h2 a { text-decoration: none; }
-	div#l10n_help ul ul { font-size:85%; }
-	div#l10n_help h3 { color: #693; font: bold 12px Arial, sans-serif; letter-spacing: 1px; margin: 10px 0 0;text-transform: uppercase; margin-bottom: 12px; }
-	</style>
+<style type="text/css">
+div#l10n_help td { vertical-align:top; }
+div#l10n_help code { font-weight:bold; font: 105%/130% "Courier New", courier, monospace; background-color: #FFFFCC;}
+div#l10n_help .code_tag{ font-weight:normal; border:1px dotted #999; background-color: #f0e68c; display:block; margin:10px 10px 20px; padding:10px; }
+div#l10n_help a:link, div#l10n_help a:visited { color: blue; text-decoration: none; border-bottom: 1px solid blue; padding-bottom:1px;}
+div#l10n_help a:hover, div#l10n_help a:active { color: blue; text-decoration: none; border-bottom: 2px solid blue; padding-bottom:1px;}
+div#l10n_help h1 { color: #369; font: 20px Georgia, sans-serif; margin: 0; text-align: center; }
+div#l10n_help h2 { border-bottom: 2px solid black; padding:10px 0 0; color: #369; font: 17px Georgia, sans-serif; }
+div#l10n_help h2 a { text-decoration: none; }
+div#l10n_help ul ul { font-size:85%; }
+div#l10n_help h3 { color: #693; font: bold 12px Arial, sans-serif; letter-spacing: 1px; margin: 10px 0 0;text-transform: uppercase; margin-bottom: 12px; }
+</style>
 # --- END PLUGIN CSS ---
 # --- BEGIN PLUGIN HELP ---
-<div id="l10n_help">
+notextile. <div id="l10n_help">
 
 h1(#top). l10n MLP Pack Help.
 
@@ -1574,10 +1574,11 @@ h2(#prefs). Preferences Help
 * "Languages":#l10n-languages
 * "Use browser 'accept-language' headers?":#l10n-use_browser_languages
 * "Show Article Table Legend":#l10n-show_legends
+* "MLP table sort order":#l10n-list_sort_order
 * "Allow cloning by rendition ID in the article table?":#l10n-show_clone_by_id
 * "Email a user when assigning them a rendition?":#l10n-send_notifications
-* "… even when assigning to yourself?":#l10n-send_notice_to_self
-* "… even when author changed in content > renditions list?":#l10n-send_notice_on_changeauthor
+* "... even when assigning to yourself?":#l10n-send_notice_to_self
+* "... even when author changed in content > renditions list?":#l10n-send_notice_on_changeauthor
 * "Power users can change a rendition's language or article?":#l10n-allow_writetab_changes
 * "Inline editing of pages and forms?":#l10n-inline_editing
 * "Allow strings to be totally deleted on the snippet > search tab?":#l10n-allow_search_delete
@@ -1614,6 +1615,15 @@ This option controls the visibility of the explanation that appears as the foote
 
 Setting this to 'no' can free up some screen space for you if you know what the colour scheme represents.
 
+h3(#l10n-list_sort_order). "MLP table sort order":#prefs
+
+Controls the displayed order of the articles in the MLP translation table. Choose from:
+
+* ID DESC -- descending ID (the default)
+* ID ASC -- ascending ID
+* NAMES DESC -- descending article name
+* NAMES ASC -- ascending article name
+
 h3(#l10n-show_clone_by_id). "Allow cloning by rendition ID in the article table?":#prefs
 
 If you set this to 'yes' an extra form will appear at the top of the article table that allows you to directly enter the ID of a rendition that you wish to clone. Hitting the 'go' button then starts the cloning process.
@@ -1623,12 +1633,12 @@ h3(#l10n-send_notifications). "Email a user when assigning them a rendition?":#p
 Using the table of articles on the Content>MLP>Articles page it is possible to clone renditions for translation into other languages. When you do so, you must assign the translation work to a translator. If you set this option to 'yes' then the MLP pack will send a notification email to the translator telling them of their work assignment and providing a clickable link that takes them straight to that rendition to start work.
 
 
-h3(#l10n-send_notice_to_self). "… even when assigning to yourself?":#prefs
+h3(#l10n-send_notice_to_self). "... even when assigning to yourself?":#prefs
 
 Some users might even assign themselves as translator of a work, and in this case you can prevent the notification email from being sent to yourself by setting this option to 'no'. Set it to 'yes' if you still want to recieve an email notification.
 
 
-h3(#l10n-send_notice_on_changeauthor). "… even when author changed in content > renditions list?":#prefs
+h3(#l10n-send_notice_on_changeauthor). "... even when author changed in content > renditions list?":#prefs
 
 The MLP pack can even send email notifications when a rendition's author is changed from the Contents>Renditions tab (that is the old 'article' tab.)
 
@@ -1891,7 +1901,7 @@ The following people supported the development of the MLP Pack and made it avail
 
 -- _Steve (Net-Carver)_
 
-</div>
+notextile. </div>
 # --- END PLUGIN HELP ---
 */
 ?>

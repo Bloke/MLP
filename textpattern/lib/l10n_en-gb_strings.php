@@ -109,6 +109,7 @@ $l10n_default_strings = array(
 	'l10n-languages' 			=> 'Languages ',
 	'l10n-legend_warning'		=> 'Warning/Error',
 	'l10n-legend_fully_visible'	=> 'Visible in all languages',
+	'l10n-list_sort_order'    => 'MLP table sort order',
 	'l10n-localised'			=> 'Localised',
 	'l10n-ltr'					=> 'LTR&nbsp;>',
 	'l10n-missing'				=> ' missing.',

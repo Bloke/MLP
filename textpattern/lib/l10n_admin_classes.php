@@ -1398,6 +1398,7 @@ class MLPPlugin extends GBPPlugin
 		'l10n-languages' => array('value' => array(), 'type' => 'gbp_array_text'),
 		'l10n-use_browser_languages' => array( 'value' => 1, 'type' => 'yesnoradio' ),
 		'l10n-show_legends' => array( 'value' => 1, 'type' => 'yesnoradio' ),
+		'l10n-list_sort_order' => array( 'value' => 'ID DESC', 'type' => 'text_input' ),
 		'l10n-show_clone_by_id' => array( 'value' => 0, 'type' => 'yesnoradio' ),
 		'l10n-send_notifications'	=>	array( 'value' => 1, 'type' => 'yesnoradio' ),
 		'l10n-send_notice_to_self'	=>	array( 'value' => 0, 'type' => 'yesnoradio' ),
@@ -4039,6 +4040,11 @@ class MLPArticleView extends GBPAdminTabView
 		#
 		extract( get_prefs() );				#	Need to do this to keep the articles/page count in sync.
 		extract( gpsa(array('page')) );
+
+		$valid_sort = array('ID DESC', 'ID ASC', 'NAMES DESC', 'NAMES ASC');
+		$sortby = strtoupper(get_pref('l10n_l10n-list_sort_order'));
+		$sortby = in_array($sortby, $valid_sort) ? $sortby : $valid_sort[0];
+
 		$total = MLPArticles::get_total();
 		$limit = max(@$article_list_pageby, 15);
 		list($page, $offset, $numPages) = pager($total, $limit, $page);
@@ -4107,7 +4113,7 @@ class MLPArticleView extends GBPAdminTabView
 		#
 		#	Use values from the pager to grab the right sections of the table.
 		#
-		$articles = MLPArticles::get_articles( '1=1' , 'ID DESC' , $offset , $limit );
+		$articles = MLPArticles::get_articles( '1=1' , $sortby , $offset , $limit );
 		if( count( $articles ) )
 			{
 			while( $article = nextRow($articles) )
