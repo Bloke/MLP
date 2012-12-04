@@ -557,7 +557,7 @@ $DB = new DB;
 			global $txp_user, $dbversion, $thisversion, $txp_using_svn, $l10n_version;
 
 			// IMPORTANT: Bump this for each release so the dirty flag is set
-			$l10n_version = '4.5.2.20121018';
+			$l10n_version = '4.5.2.20121204';
 
 			$out = array();
 
