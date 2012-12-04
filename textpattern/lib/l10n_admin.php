@@ -1423,10 +1423,16 @@ function _l10n_category_paint( $page )
 
 function _l10n_category_save( $event , $step )
 	{
-	$id_name = 'id';
+	if (strpos($step, '_create') !== false) {
+		$id_name = 'title';
+		$id = strtolower(sanitizeForUrl(gps( $id_name )));
+	} else {
+		$id_name = 'id';
+		$id = gps( $id_name );
+		assert_int($id);
+	}
+
 	$table   = 'txp_category';
-	$id = gps( $id_name );
-	assert_int($id);
 	$where = "`$id_name`='$id'";
 	$set = _l10n_build_sql_set( $table );
 	@safe_update( $table , $set , $where );
