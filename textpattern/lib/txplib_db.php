@@ -6,9 +6,13 @@ if (!defined('PFX')) {
 	} else define ("PFX",'');
 }
 
-if (get_magic_quotes_runtime())
+if (version_compare(PHP_VERSION, '5.3.0') < 0)
 {
-	set_magic_quotes_runtime(0);
+	 // We are deliberately using a deprecated function for PHP 4 compatibility
+	 if (get_magic_quotes_runtime())
+	{
+		set_magic_quotes_runtime(0);
+	}
 }
 
 class DB {
@@ -624,18 +628,20 @@ $DB = new DB;
 					# If this guess later proves to be wrong -- for example, on the first call or when
 					# the user switches browse language -- then $textarray will be reloaded.
 					#
-					@session_start();
+					session_start();
 					$language = '';
 					if( @txpinterface==='admin' )
 						$language = @$_SESSION['l10n_admin_long_lang'];
 					else
 						$language = @$_SESSION['l10n_long_lang'];
+
 					if( !empty( $language ) )
 						{
 						$out['language'] = $language;
 						}
 					}
 				}
+
 			return $out;
 		}
 
