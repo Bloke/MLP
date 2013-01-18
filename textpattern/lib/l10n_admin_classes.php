@@ -815,7 +815,7 @@ class MLPStrings
 	function insert_strings( $pfx , &$strings , $lang , $event='' , $owner='' , $override = false )
 		{
 		$debug = 0;
-		if( $debug ) 
+		if( $debug )
 			{
 			echo br , "insert_strings( $pfx , $strings , $lang , $event , $owner ," , var_dump($override), " )";
 			echo br , "where keys = " , var_dump( serialize( array_keys( $strings ) ) );
@@ -2897,9 +2897,9 @@ class MLPStringView extends GBPAdminTabView
 				$x[ $code ] = array( 'id'=>'', 'event'=>$default_event, 'data'=>'' , L10N_COL_OWNER => $default_owner );
 			}
 		ksort( $x );
-		
+
 		if( $debug ) dmp( $x );
-		
+
 		foreach( $x as $code => $data )
 			{
 			$final_codes[] = $code;
@@ -5216,7 +5216,7 @@ class MLPWizView extends GBPWizardTabView
 			$table_name = _l10n_make_textpattern_name( $code );
 			$indexes = "(PRIMARY KEY  (`ID`), KEY `categories_idx` (`Category1`(10),`Category2`(10)), KEY `Posted` (`Posted`), FULLTEXT KEY `searching` (`Title`,`Body`))";
 
-			$sql = "create table `".PFX."$table_name` $indexes select * from `".PFX."textpattern` where `".L10N_COL_LANG."`='$lang'";
+			$sql = "create table `".PFX."$table_name` $indexes ENGINE=MyISAM select * from `".PFX."textpattern` where `".L10N_COL_LANG."`='$lang'";
 			$ok = @safe_query( $sql );
 			if (mysql_error() == "Table '".PFX."$table_name' already exists")
 				$ok = 'skipped';
