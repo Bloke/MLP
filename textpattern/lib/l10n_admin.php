@@ -212,7 +212,7 @@ function _l10n_get_indexes()
 function _l10n_create_temp_textpattern( $languages )
 	{
 	$indexes = _l10n_get_indexes();
-	$sql = 'create temporary table `'.PFX.'textpattern` '.$indexes.' select * from `'.PFX.'textpattern` where `'.L10N_COL_LANG.'` IN ('.$languages.')';
+	$sql = 'create temporary table `'.PFX.'textpattern` '.$indexes.' ENGINE=MyISAM select * from `'.PFX.'textpattern` where `'.L10N_COL_LANG.'` IN ('.$languages.')';
 	@safe_query( $sql );
 	}
 function _l10n_check_index()
