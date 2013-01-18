@@ -1658,7 +1658,7 @@ class MLPPlugin extends GBPPlugin
 
 	function _initiate_callbacks( $event , $step='' , $pre=0 )
 		{
-		$results = array();
+		$results = '';
 
 		$tab = gps( 'tab' );
 		$plugin = gps( 'plugin' );

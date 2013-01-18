@@ -533,7 +533,7 @@ function _l10n_rename_articles_tab($page)
 	}
 function _l10n_inject_stuff(&$page, $stuff, &$matchpoints, $sep, $revorder=false)
 	{
-	global $plugins;
+	global $plugins, $prefs;
 
 	// wet_native sets language per user so having overridable controls makes no sense
 	if (is_array($plugins) && in_array('wet_native', $plugins)) return;
