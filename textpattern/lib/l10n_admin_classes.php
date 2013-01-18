@@ -1658,7 +1658,7 @@ class MLPPlugin extends GBPPlugin
 
 	function _initiate_callbacks( $event , $step='' , $pre=0 )
 		{
-		$results = '';
+		$results = array();
 
 		$tab = gps( 'tab' );
 		$plugin = gps( 'plugin' );
@@ -1672,7 +1672,7 @@ class MLPPlugin extends GBPPlugin
 			$results = $this->_do_callback( "l10n.enumerate_strings", '', 0, array(&$this , '_process_string_callbacks') );
 			}
 
-		return $results;
+		return serialize($results);
 		}
 
 	function _do_callback( $event, $step='', $pre=0, $func=NULL )
