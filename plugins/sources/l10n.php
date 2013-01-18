@@ -465,10 +465,13 @@ if (@txpinterface === 'public')
 		global $pretext, $l10n_language;
 
 		#
-		#	The REQUEST_URI has to be maintained to ensure comments work and compatiblitly with
+		#	The REQUEST_URI has to be maintained to ensure comments work and compatibility with
 		# plugins...
 		#
-		$pretext['request_uri'] = $_SERVER['REQUEST_URI'] = $_SESSION['l10n_request_uri'];
+		if (isset($_SESSION['l10n_request_uri']))
+		{
+			$pretext['request_uri'] = $_SERVER['REQUEST_URI'] = $_SESSION['l10n_request_uri'];
+		}
 
 		#
 		#	Detect comment submission and update master textpattern table...
@@ -637,7 +640,18 @@ if (@txpinterface === 'public')
 			if( $matches[2][0] !== '/' )
 				$extra='/';
 
-			$result = $l10n_replace_strings['start_rep'].$matches[1].'/'.$callback_language_marker.$extra.$matches[2].$l10n_replace_strings['stop_rep'];
+			$site_langs = MLPLanguageHandler::get_site_langs();
+			$default_lang_long = $site_langs[0];
+			$default_lang_short = substr( $default_lang_long , 0 , 2 );
+			if ( $l10n_language['short'] != $default_lang_short )
+				{
+				$result = $l10n_replace_strings['start_rep'].$matches[1].'/'.$callback_language_marker.$extra.$matches[2].$l10n_replace_strings['stop_rep'];
+				}
+			else
+				{
+				$result = $l10n_replace_strings['start_rep'].$matches[1].$extra.$matches[2].$l10n_replace_strings['stop_rep'];
+				}
+
 			if( $debug ) error_log( n.t.'  ->  '.$result , 3 , $logfile );
 			}
 
