@@ -325,6 +325,9 @@ function _l10n_process_url( $use_get_params=false )
 		if( $debug ) echo br , "L10N MLP: No language match found, setting to site default ... $long as $short";
 		}
 
+	$default_lang = MLPLanguageHandler::compact_code( MLPLanguageHandler::get_site_default_lang() );
+	if ( $redirect and ($_SESSION[$ssname] == $default_lang['short']) ) $redirect = false;
+
 	if( $redirect )
 		{
 		$callback_language_marker = false;
@@ -643,7 +646,7 @@ if (@txpinterface === 'public')
 			$site_langs = MLPLanguageHandler::get_site_langs();
 			$default_lang_long = $site_langs[0];
 			$default_lang_short = substr( $default_lang_long , 0 , 2 );
-			if ( $l10n_language['short'] != $default_lang_short )
+			if ( $callback_language_marker != $default_lang_short )
 				{
 				$result = $l10n_replace_strings['start_rep'].$matches[1].'/'.$callback_language_marker.$extra.$matches[2].$l10n_replace_strings['stop_rep'];
 				}
