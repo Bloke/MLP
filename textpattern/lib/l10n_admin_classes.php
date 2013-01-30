@@ -156,7 +156,7 @@ class MLPArticles
 		}
 	function _get_article_info( $id )
 		{
-		$info = safe_row( '*' , L10N_ARTICLES_TABLE , "`ID`=$id" );
+		$info = safe_row( '*' , L10N_ARTICLES_TABLE , "`ID`='$id'" );
 		if( !empty($info) )
 			$info['members'] = unserialize( $info['members'] );
 		return $info;
