@@ -2,7 +2,7 @@
 
 if( !defined( 'txpinterface' ) ) exit;
 
-global $l10n_vars, $l10n_painters, $l10n_version;
+global $l10n_vars, $l10n_painters, $l10n_release_version;
 $l10n_vars = array();
 $l10n_mappings = null;
 $l10n_painters = array();
@@ -32,7 +32,7 @@ if( $l10n_view->installed() )
 		_l10n_update_dirty_flag( '' );
 
 		# Update the installed version number
-		set_pref( 'l10n_version', $l10n_version , 'l10n', PREF_HIDDEN );
+		set_pref( 'l10n_version', $l10n_release_version , 'l10n', PREF_HIDDEN );
 		}
 
 	#

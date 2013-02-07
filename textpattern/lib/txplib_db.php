@@ -558,10 +558,10 @@ $DB = new DB;
 	define( 'L10N_DIRTY_FLAG_VARNAME', 'l10n_txp_dirty' );
 	function get_prefs()
 		{
-			global $txp_user, $dbversion, $thisversion, $txp_using_svn, $l10n_version;
+			global $txp_user, $dbversion, $thisversion, $txp_using_svn, $l10n_release_version;
 
 			// IMPORTANT: Bump this for each release so the dirty flag is set
-			$l10n_version = '4.5.2.20121204';
+			$l10n_release_version = '4.5.2.20121204';
 
 			$out = array();
 
@@ -592,9 +592,9 @@ $DB = new DB;
 
 			if ( @txpinterface==='admin')
 				{
-				$installed_l10n_ver = get_pref('l10n_version');
+				$installed_l10n_version = get_pref('l10n_version', '', 1);
 
-				if(!$dbversion or ($dbversion != $thisversion) or ($l10n_version != $installed_l10n_ver) or $txp_using_svn)
+				if(!$dbversion or ($dbversion != $thisversion) or ($l10n_release_version != $installed_l10n_version) or $txp_using_svn)
 					{
 					$name = L10N_DIRTY_FLAG_VARNAME;
 					if (!array_key_exists(L10N_DIRTY_FLAG_VARNAME , $out))
