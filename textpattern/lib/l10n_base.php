@@ -552,7 +552,7 @@ class MLPLanguageHandler
 				$short = $r['short'];
 				if( isset($r['long']) ) $long = $r['long'];
 
-				if( !array_key_exists( $short , $iso_639_langs ))
+				if( $short === false || !array_key_exists( $short , $iso_639_langs ))
 					return NULL;
 
 				$row = $iso_639_langs[$short];
