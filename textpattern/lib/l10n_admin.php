@@ -213,7 +213,7 @@ function _l10n_create_temp_textpattern( $languages )
 	{
 	$indexes = _l10n_get_indexes();
 	$sql = 'create temporary table `'.PFX.'textpattern` '.$indexes.' ENGINE=MyISAM select * from `'.PFX.'textpattern` where `'.L10N_COL_LANG.'` IN ('.$languages.')';
-	@safe_query( $sql );
+	safe_query( $sql );
 	}
 function _l10n_check_index()
 	{
@@ -241,7 +241,7 @@ function _l10n_check_index()
 	
 	if( !empty( $sql ) )
 		{
-		$ok = @safe_alter( 'textpattern' , join(',', $sql) , $debug );
+		$ok = safe_alter( 'textpattern' , join(',', $sql) , $debug );
 		}
 	else
 		{
@@ -263,7 +263,7 @@ function _l10n_post_sectionsave( $event , $step )
 		foreach( $langs as $lang )
 			{
 			$table = _l10n_make_textpattern_name(array('long'=>$lang));
-			@safe_update( $table , "Section = '$name'", "Section = '$old_name'" );
+			safe_update( $table , "Section = '$name'", "Section = '$old_name'" );
 			}
 		}
 	}
@@ -299,6 +299,12 @@ function _l10n_list_filter( $event, $step )
 					$ok = setcookie( $lang , $lang , $time );
 					}
 				}
+
+			if (empty($selected)) {
+				foreach( $langs as $lang ) {
+					$selected[] = "'$lang'";
+				}
+			}
 			$languages = join( ',' , $selected );
 			_l10n_create_temp_textpattern( $languages );
 			break;
@@ -480,7 +486,7 @@ function _l10n_setup_article_buffer_processor( $event , $step )
 		register_callback('_l10n_write_tab_view',    'article_ui', 'partials_meta');
 	}
 	else
-	ob_start( '_l10n_article_buffer_processor' );
+		ob_start( '_l10n_article_buffer_processor' );
 
 	_l10n_setup_vars( $event , $step );
 
@@ -1184,7 +1190,7 @@ function _l10n_check_lang_table( $lang )
 
 	$code = $result;
 	$table_name = _l10n_make_textpattern_name( $code );
-	if( @safe_query( "SHOW COLUMNS FROM `$table_name`" ) )
+	if( safe_query( "SHOW COLUMNS FROM `$table_name`" ) )
 		{
 		return true;
 		}
@@ -1198,11 +1204,11 @@ function _l10n_generate_lang_table( $lang )
 	list($code, $table_name) = $result;
 	$where = ' WHERE `'.L10N_COL_LANG."`='$lang'";
 
-	@safe_query( 'LOCK TABLES `'.PFX.$table_name.'` WRITE' );
-	@safe_query( 'CREATE TABLE `'.PFX.$table_name.'` LIKE `'.PFX.'textpattern`' );
-	@safe_query( 'INSERT INTO `'.PFX.$table_name.'` SELECT * FROM `'.PFX.'textpattern`'.$where );
-	@safe_query( 'OPTIMIZE TABLE `'.PFX.$table_name.'`' );
-	@safe_query( 'UNLOCK TABLES' );
+	safe_query( 'LOCK TABLES `'.PFX.$table_name.'` WRITE' );
+	safe_query( 'CREATE TABLE `'.PFX.$table_name.'` LIKE `'.PFX.'textpattern`' );
+	safe_query( 'INSERT INTO `'.PFX.$table_name.'` SELECT * FROM `'.PFX.'textpattern`'.$where );
+	safe_query( 'OPTIMIZE TABLE `'.PFX.$table_name.'`' );
+	safe_query( 'UNLOCK TABLES' );
 	}
 
 function _l10n_check_localise_table( $lang )
@@ -1252,12 +1258,12 @@ function _l10n_generate_localise_table_fields( $lang )
 			$safe_table = safe_pfx( $table );
 			$f = _l10n_make_field_name( $field , $lang );
 			$sql = "ADD `$f` ".$sql;
-			$ok = @safe_alter( $table , $sql );
+			$ok = safe_alter( $table , $sql );
 
 			if( $ok and ($do_all or $lang===$default) )
 				{
 				$sql = "UPDATE $safe_table SET `$f`=`$field` WHERE `$f`=''";
-				$ok = @safe_query( $sql );
+				$ok = safe_query( $sql );
 				}
 			}
 		}
@@ -1435,7 +1441,7 @@ function _l10n_category_save( $event , $step )
 	$table   = 'txp_category';
 	$where = "`$id_name`='$id'";
 	$set = _l10n_build_sql_set( $table );
-	@safe_update( $table , $set , $where );
+	safe_update( $table , $set , $where );
 	}
 
 function _l10n_section_paint( $page )
@@ -1500,7 +1506,7 @@ function _l10n_section_save( $event , $step )
 	$id = gps( $id_name );
 	$where = "`$id_name`='$id'";
 	$set = _l10n_build_sql_set( $table );
-	@safe_update( $table , $set , $where );
+	safe_update( $table , $set , $where );
 	}
 
 function _l10n_file_paint( $page )
@@ -1573,7 +1579,7 @@ function _l10n_file_save( $event , $step )
 	assert_int($id);
 	$where = "`$id_name`='$id'";
 	$set = _l10n_build_sql_set( $table );
-	@safe_update( $table , $set , $where );
+	safe_update( $table , $set , $where );
 	}
 
 function _l10n_link_extend ($evt, $stp, $data, $rs) {
@@ -1636,7 +1642,7 @@ function _l10n_link_save( $event , $step )
 	assert_int($id);
 	$where = "`$id_name`='$id'";
 	$set = _l10n_build_sql_set( $table );
-	@safe_update( $table , $set , $where );
+	safe_update( $table , $set , $where );
 	}
 
 function _l10n_image_extend ($evt, $stp, $data, $rs) {
@@ -1709,7 +1715,7 @@ function _l10n_image_save( $event , $step )
 	$id = gps( $id_name );
 	$where = "`$id_name`='$id'";
 	$set = _l10n_build_sql_set( $table );
-	@safe_update( $table , $set , $where );
+	safe_update( $table , $set , $where );
 	}
 
 function _l10n_php2js_array($name, $array)

@@ -147,12 +147,12 @@ class MLPArticles
 		$sql[] = "`names` TEXT NOT NULL , ";
 		$sql[] = "`members` TEXT NOT NULL";
 		$sql[] = ") $db_type $db_charsetcollation";
-		return @safe_query( join('', $sql) );
+		return safe_query( join('', $sql) );
 		}
 	function destroy_table()
 		{
 		$sql = 'drop table `'.PFX.L10N_ARTICLES_TABLE.'`';
-		return @safe_query( $sql );
+		return safe_query( $sql );
 		}
 	function _get_article_info( $id )
 		{
@@ -315,7 +315,7 @@ class MLPArticles
 			{
 			//	echo br, "Added article '$name'[$article_id], updating rendition $id ... L10N_COL_LANG = '$lang' , L10N_COL_GROUP = '$article_id'";
 			#	Update the rendition to point to its article and have a translation accounted to it...
-			$result = @safe_update( 'textpattern', "`".L10N_COL_LANG."` = '$lang',`".L10N_COL_GROUP."` = $article_id" , "ID=$id" );
+			$result = safe_update( 'textpattern', "`".L10N_COL_LANG."` = '$lang',`".L10N_COL_GROUP."` = $article_id" , "ID=$id" );
 			}
 		return $result;
 		}
@@ -797,8 +797,8 @@ class MLPStrings
 		# has a matching prefix. This catches and re-enables residual strings on a re-install.
 		#
 		$where = ' `name` LIKE "'.$pfx.L10N_SEP.'%"';
-		@safe_update( 'txp_lang' , '`'.L10N_COL_OWNER."`='$plugin'" , $where );
-		//@safe_update( 'txp_lang' , "`owner`='$plugin'" , $where );
+		safe_update( 'txp_lang' , '`'.L10N_COL_OWNER."`='$plugin'" , $where );
+		//safe_update( 'txp_lang' , "`owner`='$plugin'" , $where );
 
 		return $result;
 		}
@@ -807,7 +807,7 @@ class MLPStrings
 		{
 		global $prefs;
 		$name = doSlash( MLPStrings::do_prefs_name( $plugin ) );
-		$ok = @safe_delete( 'txp_prefs' , "`name`='$name' AND `event`='".L10N_NAME.'\'' );
+		$ok = safe_delete( 'txp_prefs' , "`name`='$name' AND `event`='".L10N_NAME.'\'' );
 		unset( $prefs[$name] );
 		return $ok;
 		}
@@ -866,16 +866,16 @@ class MLPStrings
 
 			$set 	= "`lastmod`='$lastmod', `event`='$event', `data`='$data', `".L10N_COL_OWNER."`='$owner'";
 			$where2	= "`name`='$name'";
-			$added	= @safe_insert( 'txp_lang' , $set.', '.$where.', '.$where2 );
+			$added	= safe_insert( 'txp_lang' , $set.', '.$where.', '.$where2 );
 			
 			if( $debug ) { if( !$added ) dmp( 'not added!' ); else dmp( 'Added '.$added ); }
 			
 			if( $override && !$added )
-				@safe_update( 'txp_lang' , $set , $where.' AND '.$where2 );
+				safe_update( 'txp_lang' , $set , $where.' AND '.$where2 );
 			}
 
 		# Cleanup empty strings.
-		@safe_delete( 'txp_lang', "`data`=''");
+		safe_delete( 'txp_lang', "`data`=''");
 		return true;
 		}
 
@@ -910,12 +910,12 @@ class MLPStrings
 			{
 			$where	= " `id`='$id'";
 			if( empty( $translation ) )
-				$result = @safe_delete( 'txp_lang', $where );
+				$result = safe_delete( 'txp_lang', $where );
 			else
-				$result = @safe_update( 'txp_lang' , $set , $where );
+				$result = safe_update( 'txp_lang' , $set , $where );
 			}
 		else
-			$result = @safe_insert( 'txp_lang' , $set );
+			$result = safe_insert( 'txp_lang' , $set );
 
 		return $result;
 		}
@@ -930,14 +930,14 @@ class MLPStrings
 		if( $remove_lang and !empty( $remove_lang ) )
 			{
 			$where = "(`lang` IN ('$remove_lang')) AND (`".L10N_COL_OWNER."` <> '')";
-			@safe_delete( 'txp_lang' , $where , $debug );
-			@safe_optimize( 'txp_lang' , $debug );
+			safe_delete( 'txp_lang' , $where , $debug );
+			safe_optimize( 'txp_lang' , $debug );
 			}
 		elseif( $plugin and !empty( $plugin ) )
 			{
 			$where = '`'.L10N_COL_OWNER."`=\'$plugin\'";
-			@safe_delete( 'txp_lang' , $where , $debug );
-			@safe_optimize( 'txp_lang' , $debug );
+			safe_delete( 'txp_lang' , $where , $debug );
+			safe_optimize( 'txp_lang' , $debug );
 			MLPStrings::unregister_plugin( $plugin );
 			}
 		}
@@ -975,7 +975,7 @@ class MLPStrings
 				if( !empty($event) )
 					$where .= " AND `event`='".doSlash($event)."'";
 
-				$ok = @safe_delete( 'txp_lang' , $where );
+				$ok = safe_delete( 'txp_lang' , $where );
 				if( $ok === true )
 					$deletes++;
 				}
@@ -985,7 +985,7 @@ class MLPStrings
 			else
 				$result = "$deletes of $n_strings";
 
-			@safe_optimize( 'txp_lang' );
+			safe_optimize( 'txp_lang' );
 			}
 
 		if( !empty($plugin) )
@@ -1011,8 +1011,8 @@ class MLPStrings
 		{
 		$lang = doSlash( $lang );
 		$where = " `lang`='$lang'";
-		@safe_delete( 'txp_lang' , $where , $debug );
-		@safe_optimize( 'txp_lang' , $debug );
+		safe_delete( 'txp_lang' , $where , $debug );
+		safe_optimize( 'txp_lang' , $debug );
 		}
 
 	function load_strings( $lang , $filter='' )
@@ -1524,7 +1524,7 @@ class MLPPlugin extends GBPPlugin
 				#
 				$indexes = "(PRIMARY KEY  (`ID`), KEY `categories_idx` (`Category1`(10),`Category2`(10)), KEY `Posted` (`Posted`), FULLTEXT KEY `searching` (`Title`,`Body`))";
 				$sql = "create table `$full_name` $indexes ENGINE=MyISAM select * from `".PFX."textpattern` where ".L10N_COL_LANG."='$lang'";
-				$ok = @safe_query( $sql );
+				$ok = safe_query( $sql );
 
 				#
 				#	Add fields for this language...
@@ -1535,7 +1535,7 @@ class MLPPlugin extends GBPPlugin
 				#	Conditionally extend the snip-site_slogan to include the new language...
 				#
 				global $prefs;
-				$exists = @safe_row( '*' , 'txp_lang' , "`lang`='$lang' AND `name`='snip-site_slogan'" );
+				$exists = safe_row( '*' , 'txp_lang' , "`lang`='$lang' AND `name`='snip-site_slogan'" );
 				$exists = !empty( $exists );
 				if( !$exists and @$prefs['site_slogan'] === 'My pithy slogan' )
 					{
@@ -1553,7 +1553,7 @@ class MLPPlugin extends GBPPlugin
 				#	Drop language tables that are no longer needed...
 				#
 				$sql = 'drop table `'.$full_name.'`';
-				$ok = @safe_query( $sql );
+				$ok = safe_query( $sql );
 
 				#
 				#	Get the language code...
@@ -1582,14 +1582,14 @@ class MLPPlugin extends GBPPlugin
 		if( !$exists )
 			{
 			$sql = "ADD `$f` ".$attributes['sql'];
-			$ok = @safe_alter( $table , $sql );
+			$ok = safe_alter( $table , $sql );
 			}
 		}
 	function drop_field( $table , $field , $attributes , $language )
 		{
 		$f = _l10n_make_field_name( $field , $language );
 		$sql = "DROP `$f`";
-		$ok = @safe_alter( $table , $sql );
+		$ok = safe_alter( $table , $sql );
 		}
 	function copy_defaults( $table , $field , $attributes , $language )
 		{
@@ -1599,12 +1599,12 @@ class MLPPlugin extends GBPPlugin
 		#	If we make an existing lang the default, overwrite the master field
 		# with any data from the (now default) field...
 		#
-		@safe_update( $table , "`$field`=`$f`" , "`$f` <> ''" );
+		safe_update( $table , "`$field`=`$f`" , "`$f` <> ''" );
 
 		#
 		#	Copy the master fields over to the new default field
 		#
-		@safe_update( $table , "`$f`=`$field`" , "`$field` <> ''" );
+		safe_update( $table , "`$f`=`$field`" , "`$field` <> ''" );
 
 		#
 		#	For certain tables, iterate over each site language x row, setting
@@ -1620,7 +1620,7 @@ class MLPPlugin extends GBPPlugin
 					continue;	# skip the default language, already done.
 
 				$f = _l10n_make_field_name( $field , $lang );
-				@safe_update( $table , "`$f`=`$field`" , "`$f`=''" );
+				safe_update( $table , "`$f`=`$field`" , "`$f`=''" );
 				}
 			}
 		}
@@ -2159,7 +2159,7 @@ class MLPStringView extends GBPAdminTabView
 			if( $lang and $lang!=='-' )
 				$where .= " AND `lang`='$lang'";
 
-			$rs = @safe_rows_start( 'DISTINCT name,data,lang', 'txp_lang', $where . " ORDER BY name ASC LIMIT 200" );
+			$rs = safe_rows_start( 'DISTINCT name,data,lang', 'txp_lang', $where . " ORDER BY name ASC LIMIT 200" );
 			$count = @mysql_num_rows($rs);
 			}
 
@@ -2402,7 +2402,7 @@ class MLPStringView extends GBPAdminTabView
 			# So expand the plugin list to include public plugins from the txp_plugin table.
 			# Cache directory is ignored to stop the eval() of the plugin.
 			#
-			$temps = @safe_column( 'name' , 'txp_plugin' , "`status`='1' and `type`='0'" );
+			$temps = safe_column( 'name' , 'txp_plugin' , "`status`='1' and `type`='0'" );
 			$full_plugin_list = array_merge( $temps , $plugins_ver );
 			}
 
@@ -3057,9 +3057,9 @@ class MLPStringView extends GBPAdminTabView
 			$tab = doSlash( gps( gbp_tab ) );
 
 		if( $tab === 'form' )
-			@safe_update( 'txp_form' , "`Form`='$data'" , "`name`='$owner'" );
+			safe_update( 'txp_form' , "`Form`='$data'" , "`name`='$owner'" );
 		elseif( $tab === 'page' )
-			@safe_update( 'txp_page' , "`user_html`='$data'" , "`name`='$owner'" );
+			safe_update( 'txp_page' , "`user_html`='$data'" , "`name`='$owner'" );
 		}
 
 
@@ -3478,13 +3478,13 @@ class MLPSnipIOView extends MLPSubTabView
 					$id = safe_field( 'id' , 'txp_lang' , "`name`='$name' AND `lang`='$lang'" );
 					if( false === $id )
 						{
-						$res = @safe_insert( 'txp_lang', $set);
+						$res = safe_insert( 'txp_lang', $set);
 						if( $res !== false and $res !== 0 )
 							$count++;
 						}
 					else
 						{
-						$res = @safe_update( 'txp_lang', $set, "`id`='$id'");
+						$res = safe_update( 'txp_lang', $set, "`id`='$id'");
 						if( true === $res )
 							$count++;
 						}
@@ -3831,13 +3831,13 @@ class MLPArticleView extends GBPAdminTabView
 		#
 		#	Delete from the master table...
 		#
-		$master_deleted = @safe_delete( 'textpattern' , "`ID`=$rendition" );
+		$master_deleted = safe_delete( 'textpattern' , "`ID`=$rendition" );
 
 		#
 		#	Delete from the correct language rendition table...
 		#
 		$rendition_table = _l10n_make_textpattern_name( array( 'long'=>$lang ) );
-		$rendition_deleted = @safe_delete( $rendition_table , "`ID`=$rendition" );
+		$rendition_deleted = safe_delete( $rendition_table , "`ID`=$rendition" );
 
 		#
 		#	Delete from the article table...
@@ -4846,7 +4846,7 @@ class MLPWizView extends GBPWizardTabView
 		if( $debug )
 			$rows = getThings( $sql , 1 );
 		else
-			$rows = @getThings( $sql );
+			$rows = getThings( $sql );
 
 		#
 		#	But, if it failed then retry using a different command (if possible)...
@@ -4863,7 +4863,7 @@ class MLPWizView extends GBPWizardTabView
 					$rows = getThings( $sql , 1 );
 					}
 				else
-					$rows = @getThings( $sql );
+					$rows = getThings( $sql );
 				}
 			}
 
@@ -4981,11 +4981,11 @@ class MLPWizView extends GBPWizardTabView
 		$this->add_report_item( gTxt('l10n-setup_1_title') );
 
 		$sql = " CHANGE `data` `data` TEXT NULL DEFAULT NULL";
-		$ok = @safe_alter( 'txp_lang' , $sql );
+		$ok = safe_alter( 'txp_lang' , $sql );
 		$this->add_report_item( gTxt('l10n-setup_1_extend') , $ok , true );
 
 		$sql = "ADD `".L10N_COL_OWNER."` TINYTEXT NOT NULL DEFAULT '' AFTER `data`";
-		$ok = @safe_alter( 'txp_lang' , $sql );
+		$ok = safe_alter( 'txp_lang' , $sql );
 		$this->add_report_item( gTxt('l10n-add_field',array('{field}'=>L10N_COL_OWNER ,'{table}'=>'txp_lang')) , $ok , true );
 		}
 
@@ -5030,7 +5030,7 @@ class MLPWizView extends GBPWizardTabView
 
 			$l10n_wiz_upgrade = $langs;
 			$languages = $langs;
-			@safe_delete( 'txp_prefs' , "`name`='$gbp_l10n_key'" );
+			safe_delete( 'txp_prefs' , "`name`='$gbp_l10n_key'" );
 			}
 		elseif( !empty($prev_l10n_langs) )			# reinstall, keep old language settings.
 			$languages = $prev_l10n_langs;
@@ -5100,7 +5100,7 @@ class MLPWizView extends GBPWizardTabView
 		$sql = array();
 
 		$desc = 'COLUMNS';
-		$result = @safe_show( $desc , 'textpattern' );
+		$result = safe_show( $desc , 'textpattern' );
 		$lang_found  = false;
 		$article_id_found = false;
 
@@ -5127,7 +5127,7 @@ class MLPWizView extends GBPWizardTabView
 		$this->add_report_item( gTxt('l10n-setup_3_title') );
 		if( !empty( $sql ) )
 			{
-			$ok = @safe_alter( 'textpattern' , join(',', $sql) );
+			$ok = safe_alter( 'textpattern' , join(',', $sql) );
 
 			if( $lang_found )
 				$this->add_report_item( gTxt('l10n-skip_field',array('{field}'=>L10N_COL_LANG,'{table}'=>'textpattern')) , $ok , true );
@@ -5169,7 +5169,7 @@ class MLPWizView extends GBPWizardTabView
 				}
 
 			$sql = "ADD `$f` ".$attributes['sql'];
-			$ok = @safe_alter( $table , $sql );
+			$ok = safe_alter( $table , $sql );
 			$this->add_report_item( gTxt('l10n-add_field',array('{field}'=>$f,'{table}'=>$table)) , $ok , true );
 
 			if( !$ok )
@@ -5178,7 +5178,7 @@ class MLPWizView extends GBPWizardTabView
 			if( $do_all or $lang===$default )
 				{
 				$sql = "UPDATE $safe_table SET `$f`=`$field` WHERE `$f`=''";
-				$ok = @safe_query( $sql );
+				$ok = safe_query( $sql );
 
 				if( $lang === $default )
 					$this->add_report_item( gTxt('l10n-copy_defaults',array('{field}'=>$f,'{table}'=>$table)) , $ok , true );
@@ -5217,7 +5217,7 @@ class MLPWizView extends GBPWizardTabView
 			$indexes = "(PRIMARY KEY  (`ID`), KEY `categories_idx` (`Category1`(10),`Category2`(10)), KEY `Posted` (`Posted`), FULLTEXT KEY `searching` (`Title`,`Body`))";
 
 			$sql = "create table `".PFX."$table_name` $indexes ENGINE=MyISAM select * from `".PFX."textpattern` where `".L10N_COL_LANG."`='$lang'";
-			$ok = @safe_query( $sql );
+			$ok = safe_query( $sql );
 			if (mysql_error() == "Table '".PFX."$table_name' already exists")
 				$ok = 'skipped';
 
@@ -5303,7 +5303,7 @@ class MLPWizView extends GBPWizardTabView
 	function cleanup_1()	# Drop the txp_lang.l10n_owner field
 		{
 		$sql = 'DROP `'.L10N_COL_OWNER.'`';
-		$ok = @safe_alter( 'txp_lang' , $sql );
+		$ok = safe_alter( 'txp_lang' , $sql );
 		$this->add_report_item( gTxt('l10n-drop_field',array('{field}'=>L10N_COL_OWNER, '{table}'=>'txp_lang')) , $ok );
 		}
 
@@ -5333,13 +5333,13 @@ class MLPWizView extends GBPWizardTabView
 		#
 		#	Set TxP's language preference to the currently active admin language this user is viewing the site in...
 		#
-		@safe_update('txp_prefs', "`val`='".doSlash(LANG)."'" , "`name`='language'");
+		safe_update('txp_prefs', "`val`='".doSlash(LANG)."'" , "`name`='language'");
 		}
 
 	function cleanup_3a()	# Drop lang/group from textpattern
 		{
 		$sql = 'drop `'.L10N_COL_LANG.'`, drop `'.L10N_COL_GROUP.'`';
-		$ok = @safe_alter( 'textpattern' , $sql );
+		$ok = safe_alter( 'textpattern' , $sql );
 		$this->add_report_item( gTxt('l10n-clean_3a_main' , array( '{lang}'=>L10N_COL_LANG , '{group}'=>L10N_COL_GROUP ) ) , $ok );
 		}
 
@@ -5355,7 +5355,7 @@ class MLPWizView extends GBPWizardTabView
 			{
 			$f = _l10n_make_field_name( $field , $lang );
 			$sql = "DROP `$f`";
-			$ok = @safe_alter( $table , $sql );
+			$ok = safe_alter( $table , $sql );
 			$this->add_report_item( gTxt('l10n-drop_field',array('{field}'=>$f,'{table}'=>$table)) , $ok , true );
 			}
 		}
@@ -5375,7 +5375,7 @@ class MLPWizView extends GBPWizardTabView
 			$code  = MLPLanguageHandler::compact_code( $lang );
 			$table_name = _l10n_make_textpattern_name( $code );
 			$sql = 'drop table `'.PFX.$table_name.'`';
-			$ok = @safe_query( $sql );
+			$ok = safe_query( $sql );
 			$this->add_report_item( gTxt('l10n-op_table',array('{op}'=>'Drop' ,'{table}'=>MLPLanguageHandler::get_native_name_of_lang( $lang ).' ['.$table_name.']')) , $ok , true );
 			}
 		}
@@ -5405,7 +5405,7 @@ class MLPWizView extends GBPWizardTabView
 		# 	Scans the articles, creating a group for each and adding it and setting the
 		# language to the site default...
 		$where = "1";
-		$rs = @safe_rows_start( 'ID , Title , '.L10N_COL_LANG.' , `'.L10N_COL_GROUP.'`' , 'textpattern' , $where );
+		$rs = safe_rows_start( 'ID , Title , '.L10N_COL_LANG.' , `'.L10N_COL_GROUP.'`' , 'textpattern' , $where );
 		$count = @mysql_num_rows($rs);
 
 		$i = 0;
