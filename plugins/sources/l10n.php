@@ -465,13 +465,13 @@ if (@txpinterface === 'public')
 
 	function _l10n_textpattern_comment_submit()
 		{
-		global $pretext, $l10n_language;
+		global $pretext, $l10n_language, $prefs;
 
 		#
 		#	The REQUEST_URI has to be maintained to ensure comments work and compatibility with
 		# plugins...
 		#
-		if (isset($_SESSION['l10n_request_uri']))
+		if ($prefs['l10n_l10n-url_default_lang_marker'] === '1' || isset($_SESSION['l10n_request_uri']))
 		{
 			$pretext['request_uri'] = $_SERVER['REQUEST_URI'] = $_SESSION['l10n_request_uri'];
 		}
@@ -568,7 +568,6 @@ if (@txpinterface === 'public')
 	function _l10n_inject_lang_markers_cb( $matches )
 		{
 		global $l10n_language , $l10n_replace_strings , $l10n_url_exclusions , $prefs;
-
 		$debug = 0;
 		#$debug = !$l10n_replace_strings['insert_blank'];
 		$logfile = $prefs['tempdir'] . DS . 'l10n.log.txt';
@@ -646,7 +645,8 @@ if (@txpinterface === 'public')
 			$site_langs = MLPLanguageHandler::get_site_langs();
 			$default_lang_long = $site_langs[0];
 			$default_lang_short = substr( $default_lang_long , 0 , 2 );
-			if ( $callback_language_marker != $default_lang_short )
+
+			if ( $prefs['l10n_l10n-url_default_lang_marker'] === '1' || ($callback_language_marker !== $default_lang_short) )
 				{
 				$result = $l10n_replace_strings['start_rep'].$matches[1].'/'.$callback_language_marker.$extra.$matches[2].$l10n_replace_strings['stop_rep'];
 				}

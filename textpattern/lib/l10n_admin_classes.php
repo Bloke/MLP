@@ -1408,6 +1408,7 @@ class MLPPlugin extends GBPPlugin
 		'l10n-allow_search_delete' => array( 'value' => 0, 'type' => 'yesnoradio' ),
 		'l10n-search_public_strings_only' => array( 'value' => 0, 'type' => 'yesnoradio' ),
 		'l10n-url_exclusions' => array('value' => array('css','js'), 'type' => 'gbp_array_text'),
+		'l10n-url_default_lang_marker' => array( 'value' => 1, 'type' => 'yesnoradio' ),
 		'l10n-clean_feeds' => array( 'value' => 1, 'type' => 'yesnoradio' ),
 		);
 	var $strings_prefix = L10N_NAME;

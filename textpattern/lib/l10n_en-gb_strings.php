@@ -149,6 +149,7 @@ $l10n_default_strings = array(
 	'l10n-textbox_title'		=> 'Type in the text here.',
 	'l10n-total'				=> 'Total',
 	'l10n-unlocalised'			=> 'Unlocalised',
+	'l10n-url_default_lang_marker' => 'Show default language marker in URLs?',
 	'l10n-url_exclusions' 		=> 'Exclude these sections/areas from URL re-writes?',
 	'l10n-use_browser_languages'	=> 'Use browser "accept-language" headers?',
 	'l10n-verify_clone_all'		=> 'Are you sure you want to clone all non-empty source renditions to empty {targ_lang} renditions? This will not overwrite anything but it could take some time.',
