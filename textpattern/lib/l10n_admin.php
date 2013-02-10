@@ -38,7 +38,7 @@ if( $l10n_view->installed() )
 	#
 	#	Observers...
 	#
-	register_callback( '_l10n_observe_glz_custom_fields', 'glz_custom_fields' );
+	register_callback( '_l10n_observe_table_changes', 'admin_side', 'head_end' );
 
 	#
 	#	Article handlers...
@@ -1127,14 +1127,31 @@ function _l10n_pre_multi_edit_cb( $event , $step )
 	$l10n_vars['update_work'] = $work;
 	}
 
-function _l10n_observe_glz_custom_fields( $event , $step )
-	{
-	# Observer for glz_custom_field events that change the structure of the textpattern table...
-	if( gps('delete') || gps('custom_field_number') )
-		{
-		_l10n_update_dirty_flag( 'DIRTY' );
-		}
+function _l10n_observe_table_changes( $event , $step )
+{
+	static $l10n_hashes = array();
+
+	if (isset($l10n_hashes['textpattern'])) {
+		$rs = $l10n_hashes['textpattern'];
+	} else {
+		$rs = safe_show('COLUMNS', 'textpattern');
+		$l10n_hashes['textpattern'] = $rs;
 	}
+
+	$txp_table_hash = md5(serialize($l10n_hashes['textpattern']));
+	$previous_hashes = unserialize(get_pref('l10n_hashes'));
+
+	if ($previous_hashes['textpattern'] !== $txp_table_hash) {
+		_l10n_sync_table_definitions( $l10n_hashes );
+//	_l10n_update_dirty_flag( 'DIRTY' );
+	}
+
+	// Regenerate the hash table and stash it
+	$hash_table = array();
+	$hash_table['textpattern'] = $txp_table_hash;
+
+	set_pref('l10n_hashes', serialize($hash_table), 'l10n', PREF_HIDDEN);
+}
 
 function _l10n_update_dirty_flag( $v )
 	{
@@ -1268,6 +1285,104 @@ function _l10n_generate_localise_table_fields( $lang )
 			}
 		}
 	}
+
+/**
+ * Maintain synchronisation between lang tables
+ *
+ * Any time a key table's structure is altered, this routine
+ * runs to resync the definitions of any dependent tables
+ * with the master.
+ *
+ * It's not perfect and won't currently insert/update Indexes.
+ *
+ * @param $sources array Key is table name, value is desired table definition
+ * @see _l10n_observe_table_changes
+*/
+function _l10n_sync_table_definitions( $source = array() )
+{
+	if (!is_array($source)) {
+		return false;
+	}
+
+	foreach ($source as $table => $definition)
+	{
+//dmp($definition);
+		switch ($table)
+		{
+			case 'textpattern':
+				$langs = MLPLanguageHandler::get_site_langs();
+
+				foreach ($langs as $lang)
+				{
+					$sql = array();
+					$safe_lang = _l10n_check_lang_code( $lang );
+					if( !is_string($safe_lang) ) continue;
+
+					$table = _l10n_make_textpattern_name(array('long' => $lang));
+					$rs = safe_show('COLUMNS', $table);
+
+					foreach ($definition as $def)
+					{
+						$field = $def['Field'];
+
+						$type = $def['Type'];
+						$null = $def['Null'];
+						$default = $def['Default'];
+						$extra = $def['Extra'];
+
+						$found = false;
+						foreach ($rs as $idx => $lang_field) {
+							if ( $lang_field['Field'] === $field) {
+								$found = $idx;
+								break;
+							}
+						}
+
+						// ID fields can't be altered here due to auto_increment differences
+						// This can't be done earlier as we don't know the position in the destination table until now
+						if ($field === 'ID') {
+							unset($rs[$found]);
+							continue;
+						}
+
+						if ($found !== false) {
+							// Field exists in destination table so update its definition if anything's changed
+							$dest_type = $rs[$found]['Type'];
+							$dest_null = $rs[$found]['Null'];
+							$dest_default = $rs[$found]['Default'];
+							$dest_extra = $rs[$found]['Extra'];
+
+							if ( $type !== $dest_type
+									|| $null !== $dest_null
+									|| $default !== $dest_default
+									|| $extra !== $dest_extra )
+								{
+									$sql[] = 'MODIFY ' .$field. ' ' .$type . ($null === 'NO' ? ' NOT NULL' : ' NULL') . ($default ? ' DEFAULT "'.$default.'"' : '') . ' ' .$extra;
+								}
+
+							//Removing each found item from the destination table serves two putposes:
+							// 1) it speeds the loop up as things move forward
+							// 2) it means that any fields left over by the time the loop ends are fields that need removing
+							unset($rs[$found]);
+
+						} else {
+							// New field (or possibly a renamed field, but if that happens there are more urgent things to worry about!)
+							$sql[] = 'ADD ' .$field. ' ' .$type . ($null === 'NO' ? ' NOT NULL' : ' NULL') . ($default ? ' DEFAULT "'.$default.'"' : '') . ' ' .$extra;
+						}
+					}
+
+					// Extraneous fields: remove them
+					foreach ($rs as $def) {
+						$sql[] = 'DROP ' . $def['Field'];
+					}
+					foreach ($sql as $statement) {
+						safe_alter($table, $statement);
+					}
+				}
+			break;
+		}
+	}
+}
 
 function _l10n_pre_discuss_multi_edit( $event , $step )
 	{
