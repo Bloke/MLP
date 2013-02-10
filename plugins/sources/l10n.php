@@ -1,11 +1,11 @@
 <?php
 
 $plugin['name'] = 'l10n';
-$plugin['version'] = '4.5.1';
+$plugin['version'] = '4.5.4-01';
 $plugin['author'] = 'Graeme Porteous & Steve (Netcarver)';
 $plugin['author_uri'] = 'http://txp-plugins.netcarving.com/plugins/mlp-plugin';
 $plugin['description'] = 'Multi-Lingual Publishing Package.';
-$plugin['type'] = '1';
+$plugin['type'] = '5';
 $plugin['order'] = 1;	# Make sure we get first shot at incomming url requests
 
 @include_once('../zem_tpl.php');
@@ -1601,6 +1601,7 @@ h2(#prefs). Preferences Help
 * "Allow strings to be totally deleted on the snippet > search tab?":#l10n-allow_search_delete
 * "Limit string searches to publicly available strings?":#l10n-search_public_strings_only
 * "Exclude these sections/areas from URL re-writes?":#l10n-url_exclusions
+* "Show default language marker in URLs?":#l10n-url_default_lang_marker
 * "Keep Txp's normal feed behaviour (don't inject language markers in feeds)":#l10n-clean_feeds
 
 h3(#l10n-languages). "Languages":#prefs
@@ -1688,6 +1689,12 @@ List any section or area under your site root that have URLs that you do *not* w
 # No need to include 'textpattern', 'file_downloads', your Image directory or the directory used by @rvm_css@.
 
 You might want to include areas such as 'js' if you have a JavaScript directory.
+
+* "Show default language marker in URLs?":#l10n-url_default_lang_marker
+
+h3(#l10n-url_default_lang_marker). "Show default language marker in URLs?":#prefs
+
+Allows you to show or hide the language marker (e.g. @/en@, @/de@, @/fr@, etc) for the default site language in URLs. That is, if your site's default language is English then toggling this option off will remove @/en@ from all public side URLs.
 
 h3(#l10n-clean_feeds). "Keep Txp's normal feed behaviour (don't inject language markers in feeds)":#prefs
 
