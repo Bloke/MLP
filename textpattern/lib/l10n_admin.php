@@ -60,9 +60,10 @@ if( $l10n_view->installed() )
 	register_callback( '_l10n_post_discuss_multi_edit' 		, 'discuss' , 'discuss_multi_edit' );
 
 	#
-	#	Section handlers...
+	#	Rename handlers...
 	#
-	register_callback( '_l10n_post_sectionsave'				, 'section' , 'section_save' );
+	register_callback( '_l10n_post_save', 'section', 'section_save' );
+	register_callback( '_l10n_post_save', 'category');
 
 	#
 	#	Language management handlers (to stop language strings from being deleted) ...
@@ -250,23 +251,41 @@ function _l10n_check_index()
 
 	if($debug) dmp('Exiting _l10n_check_index()');
 	}
-function _l10n_post_sectionsave( $event , $step )
+function _l10n_post_save( $event , $step )
+{
+	$fields = array();
+	if ($event === 'section')
 	{
-	//echo br , "_l10n_post_sectionsave( $event , $step )";
+		$fields[] = 'Section';
+	}
+	else if ($event === 'category' && strpos($step, '_save') !== false)
+	{
+		$fields = array('Category1', 'Category2');
+	}
+
+	if (empty($fields))
+	{
+		return false;
+	}
 
 	$old_name = doSlash( ps('old_name') );
 	$name     = doSlash( sanitizeForUrl( ps('name') ) );
 
 	if( $name !== $old_name )
-		{
+	{
 		$langs = MLPLanguageHandler::get_site_langs();
 		foreach( $langs as $lang )
-			{
+		{
 			$table = _l10n_make_textpattern_name(array('long'=>$lang));
-			safe_update( $table , "Section = '$name'", "Section = '$old_name'" );
+			foreach ($fields as $field)
+			{
+				$clause = $field . " = '$old_name'" ;
+				safe_update( $table , $field . " = '$name'", $clause );
 			}
 		}
 	}
+}
+
 function _l10n_list_filter( $event, $step )
 	{
 	if( $event !== 'list' )
