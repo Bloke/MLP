@@ -105,7 +105,6 @@ function _l10n_process_url( $use_get_params=false )
 	$new_first_path = '';
 	$debug = (0) && (@txpinterface === 'public');
 
-	@session_start();
 	$site_langs = MLPLanguageHandler::get_site_langs();
 
 	$req_method = serverSet('REQUEST_METHOD');
@@ -156,7 +155,7 @@ function _l10n_process_url( $use_get_params=false )
 	if( $use_get_params )
 		{
 		#
-		#	Admin session variables differ from public to stop crosstalk...
+		#	Admin lang cookies differ from public to stop crosstalk...
 		#
 		$ssname = 'l10n_admin_short_lang';
 		$lsname = 'l10n_admin_long_lang';
@@ -174,9 +173,9 @@ function _l10n_process_url( $use_get_params=false )
 			#
 			#	Hit! We can serve this language...
 			#
-			$_SESSION[$ssname] = $tmp;
-			$_SESSION[$lsname] = $temp;
-			if( $debug ) echo br , "L10N MLP: Set session vars ($ssname < $tmp) ($lsname < $temp).";
+			_l10n_set_cookie($ssname, $tmp);
+			_l10n_set_cookie($lsname, $temp);
+			if( $debug ) echo br , "L10N MLP: Set lang cookie ($ssname < $tmp) ($lsname < $temp).";
 			}
 		}
 
@@ -197,8 +196,8 @@ function _l10n_process_url( $use_get_params=false )
 		if( is_array($callback_detect_language) and isset($callback_detect_language['lang']) and isset($callback_detect_language['lang']['long']) and in_array( $callback_detect_language['lang']['long'] , $site_langs ) )
 			{
 			if( $debug ) echo br , "L10N MLP: Plugin callback returned " , var_dump($callback_detect_language);
-			$_SESSION[$ssname] = $callback_detect_language['lang']['short'];
-			$_SESSION[$lsname] = $callback_detect_language['lang']['long'];
+			_l10n_set_cookie($ssname, $callback_detect_language['lang']['short']);
+			_l10n_set_cookie($lsname, $callback_detect_language['lang']['long']);
 			$reduced_uri = $callback_detect_language['uri']['reduced'];
 			$new_first_path = array_shift(explode('/', ltrim($reduced_uri, '/'), 2));
 			$u1 = $callback_detect_language['uri']['code'];
@@ -218,9 +217,9 @@ function _l10n_process_url( $use_get_params=false )
 				#
 				#	Hit! We can serve this language...
 				#
-				if( $debug ) echo br , "L10N MLP: Set session vars ($ssname < $u1) ($lsname < $temp).";
-				$_SESSION[$ssname] = $u1;
-				$_SESSION[$lsname] = $temp;
+				if( $debug ) echo br , "L10N MLP: Set lang cookies ($ssname < $u1) ($lsname < $temp).";
+				_l10n_set_cookie($ssname, $u1);
+				_l10n_set_cookie($lsname, $temp);
 				}
 			else
 				{
@@ -246,8 +245,8 @@ function _l10n_process_url( $use_get_params=false )
 			# commenting and plugins...
 			#
 			$lang_code_pos = strpos( $_SERVER['REQUEST_URI'] , "/$u1/" );
-			$_SESSION['l10n_request_uri'] = substr( $_SERVER['REQUEST_URI'] , 0 , $lang_code_pos+1 ).
-				substr( $_SERVER['REQUEST_URI'] , $lang_code_pos+strlen($u1)+2, strlen($_SERVER['REQUEST_URI']) );
+			_l10n_set_cookie('l10n_request_uri', substr( $_SERVER['REQUEST_URI'] , 0 , $lang_code_pos+1 ).
+				substr( $_SERVER['REQUEST_URI'] , $lang_code_pos+strlen($u1)+2, strlen($_SERVER['REQUEST_URI']) ) );
 
 			if( !( $new_uri = $reduced_uri ) )
 				$new_uri = substr( $req , strlen($u1)+1 );
@@ -261,7 +260,7 @@ function _l10n_process_url( $use_get_params=false )
 	if( @$prefs['l10n_l10n-use_browser_languages'] == '1' )
 		{
 		if( $debug ) echo br,br,"Checking browser accept-language headers.",br,br;
-		if( !isset($_SESSION[$ssname]) or empty($_SESSION[$ssname]) )
+		if( !isset($_COOKIE[$ssname]) or empty($_COOKIE[$ssname]) )
 			{
 			#
 			#	If we are still missing a language for the session, try to get the prefered selection
@@ -301,8 +300,8 @@ function _l10n_process_url( $use_get_params=false )
 
 							if( in_array( $lang['long'] , $site_langs ) )
 								{
-								$_SESSION[$ssname] = $lang['short'];
-								$_SESSION[$lsname] = $lang['long'];
+								_l10n_set_cookie($ssname, $lang['short']);
+								_l10n_set_cookie($lsname, $lang['long']);
 								if( $debug ) echo 'Setting language to '.$lang['long'].' from browser headers',br,br;
 								break;
 								}
@@ -316,24 +315,24 @@ function _l10n_process_url( $use_get_params=false )
 	#
 	#	If we are still missing a language for the session, use the site default...
 	#
-	if( !isset($_SESSION[$ssname]) or empty($_SESSION[$ssname]) )
+	if( !isset($_COOKIE[$ssname]) or empty($_COOKIE[$ssname]) )
 		{
 		$long = $site_langs[0];
 		$short = substr( $long , 0 , 2 );
-		$_SESSION[$ssname] = $short;
-		$_SESSION[$lsname] = $long;
+		_l10n_set_cookie($ssname, $short);
+		_l10n_set_cookie($lsname, $long);
 		if( $debug ) echo br , "L10N MLP: No language match found, setting to site default ... $long as $short";
 		}
 
 	$default_lang = MLPLanguageHandler::compact_code( MLPLanguageHandler::get_site_default_lang() );
-	if ( $redirect and ($_SESSION[$ssname] == $default_lang['short']) ) $redirect = false;
+	if ( $redirect and ($_COOKIE[$ssname] == $default_lang['short']) ) $redirect = false;
 
 	if( $redirect )
 		{
 		$callback_language_marker = false;
 		if( isset($prefs['l10n_language_marker_func']) and is_callable($prefs['l10n_language_marker_func']) )
-			$callback_language_marker = call_user_func( $prefs['l10n_language_marker_func'], $_SESSION[$lsname] );
-		if( !$callback_language_marker ) $callback_language_marker = $_SESSION[$ssname];
+			$callback_language_marker = call_user_func( $prefs['l10n_language_marker_func'], $_COOKIE[$lsname] );
+		if( !$callback_language_marker ) $callback_language_marker = $_COOKIE[$ssname];
 		$location = hu.$callback_language_marker.'/'; # QUESTION: Does this need a trailing slash?
 
 		if( $debug )
@@ -350,8 +349,8 @@ function _l10n_process_url( $use_get_params=false )
 			}
 		}
 
-	if( _l10n_set_browse_language( $_SESSION[$lsname] , true , $debug ) );
-	else _l10n_set_browse_language( $_SESSION[$ssname] , false , $debug );
+	if( _l10n_set_browse_language( $_COOKIE[$lsname] , true , $debug ) );
+	else _l10n_set_browse_language( $_COOKIE[$ssname] , false , $debug );
 
 	if( $debug ) echo br , "New first path is: $new_first_path";
 	return $new_first_path;
@@ -471,9 +470,9 @@ if (@txpinterface === 'public')
 		#	The REQUEST_URI has to be maintained to ensure comments work and compatibility with
 		# plugins...
 		#
-		if ($prefs['l10n_l10n-url_default_lang_marker'] === '1' || isset($_SESSION['l10n_request_uri']))
+		if ($prefs['l10n_l10n-url_default_lang_marker'] === '1' || isset($_COOKIE['l10n_request_uri']))
 		{
-			$pretext['request_uri'] = $_SERVER['REQUEST_URI'] = $_SESSION['l10n_request_uri'];
+			$pretext['request_uri'] = $_SERVER['REQUEST_URI'] = $_COOKIE['l10n_request_uri'];
 		}
 
 		#

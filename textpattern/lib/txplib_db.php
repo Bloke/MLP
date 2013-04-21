@@ -621,19 +621,18 @@ $DB = new DB;
 				if( l10n_installed( true ) )
 					{
 					#	First call and the plugin is installed and active so guess
-					# which language the user is browsing in based on the long session variable.
+					# which language the user is browsing in based on the long lang variable.
 					# This will not be set for the first visit to a page but it does reduce the need
 					# for reloading the strings.
 					#
 					# If this guess later proves to be wrong -- for example, on the first call or when
 					# the user switches browse language -- then $textarray will be reloaded.
 					#
-					session_start();
 					$language = '';
 					if( @txpinterface==='admin' )
-						$language = @$_SESSION['l10n_admin_long_lang'];
+						$language = @$_COOKIE['l10n_admin_long_lang'];
 					else
-						$language = @$_SESSION['l10n_long_lang'];
+						$language = @$_COOKIE['l10n_long_lang'];
 
 					if( !empty( $language ) )
 						{
