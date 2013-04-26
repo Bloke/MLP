@@ -179,7 +179,7 @@ function _l10n_process_url( $use_get_params=false )
 			}
 		}
 
-	if( !$use_get_params and !empty( $u1 ) )
+	if( !$use_get_params )
 		{
 		if( $debug ) echo br , "L10N MLP: Public - Checking URL ($req), LANG = " , LANG;
 
@@ -204,7 +204,11 @@ function _l10n_process_url( $use_get_params=false )
 			}
 		else
 			{
-			if (empty($temp))
+			if (empty( $u1 ))
+				{
+					$u1 = isset($_COOKIE[$ssname]) ? $_COOKIE[$ssname] : '';
+				}
+			if (empty($temp) )
 				{
 				if( $debug ) echo br , 'L10N MLP: Checking start of path for language ... ' . $u1;
 				$temp = MLPLanguageHandler::expand_code( $u1 );
@@ -522,17 +526,17 @@ if (@txpinterface === 'public')
 			#	Prevent the feed routine(s) from removing our handler!
 			if (extension_loaded('zlib') && ini_get('zlib.output_compression') == 0 && ini_get('output_handler') != 'ob_gzhandler' && !headers_sent())
 				{
-				@ob_start('ob_gzhandler');
+				ob_start('ob_gzhandler');
 				if( $prefs['l10n_l10n-clean_feeds'] == '0' )
 					ini_set( 'zlib.output_compression' , 1 );
 				}
 
 			#	Inject our language markers into the feed stream...
-			@ob_start( '_l10n_inject_'.$first_chunk.'_lang_markers' );
+			ob_start( '_l10n_inject_'.$first_chunk.'_lang_markers' );
 			}
 		elseif( $first_chunk !== 'file_download' )
 			{
-			@ob_start('_l10n_inject_lang_markers');
+			ob_start('_l10n_inject_lang_markers');
 			}
 		}
 	function _l10n_markup( $s , $quote = false )

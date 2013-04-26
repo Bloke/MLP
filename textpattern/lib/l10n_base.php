@@ -441,10 +441,10 @@ function _l10n_make_textpattern_name( $full_code )
 
 function _l10n_set_cookie( $name, $value )
 	{
-		setcookie($name, $value, 0, '/', false, true);
+		setcookie($name, $value, 0, '/', false, false);
 
 		// Kludge to simulate session var :-(
-		if (!isset($_COOKIE[$name])) $_COOKIE[$name] = $value;
+		$_COOKIE[$name] = $value;
 	}
 
 
