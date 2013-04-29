@@ -4,3 +4,14 @@ MLP KNOWN ISSUES
 * If using the 'Power users can change a rendition's language or article'
 feature, if you change a rendition's language or article ID then the 'View'
 link will not be updated until you reload the article.
+
+* Older version of MLP sometimes lost track of changes to the textpattern
+table made by other plugins such as glz_custom_fields. This manifests
+itself when you save a rendition and the changes are reflected in the
+admin side but _not_ in the public site. To fix this, find any plugin that
+modifies the textpattern table and force it to make a change to the table.
+For example, with glz_custom_fields, visit Extensions->Custom Fields and
+either change an existing field's type, or create a new field. Make sure
+you save the changes and then visit another admin panel which causes MLP
+to resync the tables. You can then change your edited custom field back
+the way it was, if you wish.
