@@ -12,7 +12,11 @@ if( $l10n_view->installed() )
 	#
 	#	Detect the dirty-flag and re-build tables...
 	#
-	global $prefs;
+	global $prefs, $app_mode;
+
+	if ($app_mode === 'async') {
+		return '';
+	}
 
 	if( @$prefs[L10N_DIRTY_FLAG_VARNAME] === 'DIRTY' )
 		{
