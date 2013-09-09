@@ -14,10 +14,6 @@ if( $l10n_view->installed() )
 	#
 	global $prefs, $app_mode;
 
-	if ($app_mode === 'async') {
-		return '';
-	}
-
 	if( @$prefs[L10N_DIRTY_FLAG_VARNAME] === 'DIRTY' )
 		{
 		# Ensure new indexes (indices) are present in case of upgrade...
@@ -121,7 +117,10 @@ if( $l10n_view->installed() )
 	register_callback('_l10n_image_extend',    'image_ui',    'extend_detail_form');
 	register_callback('_l10n_link_extend',     'link_ui',     'extend_detail_form');
 
-	ob_start('_l10n_process_admin_page');
+	if ($app_mode !== 'async') {
+		ob_start('_l10n_process_admin_page');
+	}
+
 	}
 
 function _l10n_register_painter( $fn , $e, $s )
