@@ -180,7 +180,7 @@ function _l10n_process_url( $use_get_params=false )
 			}
 		}
 
-	if( !$use_get_params )
+	if( !$use_get_params and !empty( $u1 ) )
 		{
 		if( $debug ) echo br , "L10N MLP: Public - Checking URL ($req), LANG = " , LANG;
 
@@ -205,11 +205,7 @@ function _l10n_process_url( $use_get_params=false )
 			}
 		else
 			{
-			if (empty( $u1 ))
-				{
-					$u1 = isset($_COOKIE[$ssname]) ? $_COOKIE[$ssname] : '';
-				}
-			if (empty($temp) )
+			if (empty($temp))
 				{
 				if( $debug ) echo br , 'L10N MLP: Checking start of path for language ... ' . $u1;
 				$temp = MLPLanguageHandler::expand_code( $u1 );

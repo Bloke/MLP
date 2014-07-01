@@ -440,7 +440,6 @@ function _l10n_make_textpattern_name( $full_code )
 	}
 
 
-
 class MLPLanguageHandler
 	{
 	#	class MLPLanguageHandler implements ISO-639-1 language support.
