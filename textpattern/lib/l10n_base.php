@@ -439,13 +439,6 @@ function _l10n_make_textpattern_name( $full_code )
 	return $result;
 	}
 
-function _l10n_set_cookie( $name, $value )
-	{
-		setcookie($name, $value, 0, '/', false, false);
-
-		// Kludge to simulate session var :-(
-		$_COOKIE[$name] = $value;
-	}
 
 
 class MLPLanguageHandler

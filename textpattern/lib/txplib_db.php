@@ -555,6 +555,24 @@ $DB = new DB;
 		}
 
 //-------------------------------------------------------------
+	function l10n_session_start()
+	{
+		if (headers_sent()) {
+			if (!isset($_SESSION)) {
+				$_SESSION = array();
+			}
+
+			return false;
+		} else if (!isset($_SESSION)) {
+			session_start();
+
+			return true;
+		} else {
+			return true;
+		}
+	}
+
+//-------------------------------------------------------------
 	define( 'L10N_DIRTY_FLAG_VARNAME', 'l10n_txp_dirty' );
 	function get_prefs()
 		{
@@ -566,7 +584,7 @@ $DB = new DB;
 			$out = array();
 
 			// get current user's private prefs
-			if ($txp_user and (version_compare($dbversion, '4.0.9', '>=') or $txp_using_svn)) {
+			if ($txp_user) {
 				$r = safe_rows_start('name, val', 'txp_prefs', 'prefs_id=1 AND user_name=\''.doSlash($txp_user).'\'');
 				if ($r) {
 					while ($a = nextRow($r)) {
@@ -576,37 +594,20 @@ $DB = new DB;
 			}
 
 			// get global prefs, eventually override equally named user prefs.
-			if (version_compare($dbversion, '4.0.9', '>=') or $txp_using_svn)
-				{
-				$r = safe_rows_start('name, val', 'txp_prefs', 'prefs_id=1 AND user_name=\'\'');
-				}
-			else
-				{
-				$r = safe_rows_start('name, val', 'txp_prefs', 'prefs_id=1');
-				}
+			$r = safe_rows_start('name, val', 'txp_prefs', 'prefs_id=1 AND user_name=\'\'');
 			if ($r) {
 				while ($a = nextRow($r)) {
 					$out[$a['name']] = $a['val'];
 				}
 			}
 
-			if ( @txpinterface==='admin')
-				{
+			if ( @txpinterface==='admin') {
 				$installed_l10n_version = get_pref('l10n_version', '', 1);
 
-				if(!$dbversion or ($dbversion != $thisversion) or ($l10n_release_version != $installed_l10n_version) or $txp_using_svn)
-					{
-					$name = L10N_DIRTY_FLAG_VARNAME;
-					if (!array_key_exists(L10N_DIRTY_FLAG_VARNAME , $out))
-						{
-						safe_insert('txp_prefs', "name = '$name', val = 'DIRTY', event = 'l10n', html = 'text_input', type = '2', prefs_id = 1");
-						}
-					else
-						{
-						safe_update('txp_prefs', "val = 'DIRTY'", "name like '$name'");
-						}
-					}
+				if(!$dbversion or ($dbversion != $thisversion) or ($l10n_release_version != $installed_l10n_version) or $txp_using_svn) {
+					set_pref(L10N_DIRTY_FLAG_VARNAME, 'DIRTY', 'l10n', PREF_HIDDEN);
 				}
+			}
 
 			$exception = false;
 			$exception_events = array( 'prefs' );	# These txp pages do their own language loading from the $prefs['language'] setting.
@@ -616,30 +617,28 @@ $DB = new DB;
 			if( defined('LANG') && !$exception )
 				return $out;
 
-			if( (@txpinterface==='admin') or (@txpinterface==='public') )
-				{
-				if( l10n_installed( true ) )
-					{
+			if( (@txpinterface==='admin') or (@txpinterface==='public') ) {
+				if( l10n_installed( true ) ) {
 					#	First call and the plugin is installed and active so guess
-					# which language the user is browsing in based on the long lang variable.
+					# which language the user is browsing in based on the long session variable.
 					# This will not be set for the first visit to a page but it does reduce the need
 					# for reloading the strings.
 					#
 					# If this guess later proves to be wrong -- for example, on the first call or when
 					# the user switches browse language -- then $textarray will be reloaded.
 					#
+					l10n_session_start();
 					$language = '';
 					if( @txpinterface==='admin' )
-						$language = @$_COOKIE['l10n_admin_long_lang'];
+						$language = @$_SESSION['l10n_admin_long_lang'];
 					else
-						$language = @$_COOKIE['l10n_long_lang'];
+						$language = @$_SESSION['l10n_long_lang'];
 
-					if( !empty( $language ) )
-						{
+					if( !empty( $language ) ) {
 						$out['language'] = $language;
-						}
 					}
 				}
+			}
 
 			return $out;
 		}

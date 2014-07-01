@@ -5042,14 +5042,15 @@ class MLPWizView extends GBPWizardTabView
 		$this->add_report_item( gTxt( 'l10n-setup_2_langs' , array( '{langs}' => join( ', ' , $languages ) ) ) , true );
 
 		#
-		#	Reset the lang cookie (in case of a language switch and then a reinstall)...
+		#	Reset the session variable (in case of a language switch and then a reinstall)...
 		#
+		l10n_session_start();
 		$temp = LANG;
 		$tmp = substr( $temp , 0 , 2 );
 		if( !empty($temp) )
 			{
-			_l10n_set_cookie('l10n_admin_short_lang', $tmp);
-			_l10n_set_cookie('l10n_admin_long_lang', $temp);
+			$_SESSION['l10n_admin_short_lang'] = $tmp;
+			$_SESSION['l10n_admin_long_lang']  = $temp;
 			}
 
 
