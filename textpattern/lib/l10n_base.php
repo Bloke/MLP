@@ -443,7 +443,7 @@ function _l10n_make_textpattern_name( $full_code )
 class MLPLanguageHandler
 	{
 	#	class MLPLanguageHandler implements ISO-639-1 language support.
-	function do_fleshout_names( &$langs , $suffix='' , $append_code = true , $append_default=false , $use_long=true )
+	static function do_fleshout_names( $langs , $suffix='' , $append_code = true , $append_default=false , $use_long=true )
 		{
 		$result = array();
 		if( is_array($langs) and !empty($langs) )
@@ -466,7 +466,7 @@ class MLPLanguageHandler
 			}
 		return $result;
 		}
-	function do_fleshout_dirs( &$langs )
+	static function do_fleshout_dirs( $langs )
 		{
 		$result = array();
 		if( is_array($langs) and !empty($langs) )
@@ -481,7 +481,7 @@ class MLPLanguageHandler
 		return $result;
 		}
 
-	function compact_code( $long_code )
+	static function compact_code( $long_code )
 		{
 		/*
 		Pull apart a long form language code into components.
@@ -515,7 +515,7 @@ class MLPLanguageHandler
 		return $result;
 		}
 
-	function expand_code( $short_code )
+	static function expand_code( $short_code )
 		{
 		$result = array();
 		$short_code = trim( $short_code );
@@ -539,7 +539,7 @@ class MLPLanguageHandler
 		return NULL;
 		}
 
-	function iso_639_langs ( $input, $to_return='lang' )
+	static function iso_639_langs ( $input, $to_return='lang' )
 		{
 		global $iso_639_langs;
 
@@ -624,7 +624,7 @@ class MLPLanguageHandler
 			}
 		}
 
-	function is_valid_code($code)
+	static function is_valid_code($code)
 		{
 		/*
 		Check the given string is a valid language code.
@@ -637,7 +637,7 @@ class MLPLanguageHandler
 		return false;
 		}
 
-	function is_valid_short_code($code)
+	static function is_valid_short_code($code)
 		{
 		/*
 		Check the given string is a valid 2-digit language code from the ISO-639-1 table.
@@ -651,7 +651,7 @@ class MLPLanguageHandler
 		return $result;
 		}
 
-	function find_code_for_lang( $name )
+	static function find_code_for_lang( $name )
 		{
 		/*
 		Returns the ISO-639-1 code for the given native language.
@@ -669,7 +669,7 @@ class MLPLanguageHandler
 		return $out;
 		}
 
-	function get_lang_direction_markup( $lang )
+	static function get_lang_direction_markup( $lang )
 		{
 		/*
 		Builds the xhtml direction markup needed based upon the directionality of the language requested.
@@ -680,7 +680,7 @@ class MLPLanguageHandler
 		return $dir;
 		}
 
-	function get_lang_direction( $lang )
+	static function get_lang_direction( $lang )
 		{
 		/*
 		Builds the xhtml direction markup needed based upon the directionality of the language requested.
@@ -691,7 +691,7 @@ class MLPLanguageHandler
 		return $dir;
 		}
 
-	function get_native_name_of_lang( $code )
+	static function get_native_name_of_lang( $code )
 		{
 		/*
 		Returns the native name of the given language code.
@@ -699,7 +699,7 @@ class MLPLanguageHandler
 		return (MLPLanguageHandler::iso_639_langs( $code )) ? MLPLanguageHandler::iso_639_langs( $code ) : MLPLanguageHandler::iso_639_langs( 'en' ) ;
 		}
 
-	function get_site_langs( $set_if_empty = false )
+	static function get_site_langs( $set_if_empty = false )
 		{
 		/*
 		Returns an array of the languages the public site supports.
@@ -728,7 +728,7 @@ class MLPLanguageHandler
 		return $lang_codes;
 		}
 
-	function get_site_default_lang()
+	static function get_site_default_lang()
 		{
 		/*
 		Returns a string containing the ISO-639-1 language to be used as the site's default.
@@ -736,7 +736,7 @@ class MLPLanguageHandler
 		$lang_codes = MLPLanguageHandler::get_site_langs();
 		return $lang_codes[0];
 		}
-	function find_lang( $partial_key , $langs )
+	static function find_lang( $partial_key , $langs )
 		{
 		$result = $partial_key;
 		$len = strlen( $partial_key );
@@ -761,7 +761,7 @@ class MLPLanguageHandler
 
 		return $result;
 		}
-	function get_installation_langs( $limit = 400 )
+	static function get_installation_langs( $limit = 400 )
 		{
 		/*
 		Returns an array of all the languages in this TXP installation with more

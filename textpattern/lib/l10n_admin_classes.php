@@ -38,7 +38,7 @@ else
 #
 class MLPTableManager
 	{
-	function walk_table_return_array( $table , $fname , $fdata , $fn , $fn_data = null )
+	static function walk_table_return_array( $table , $fname , $fdata , $fn , $fn_data = null )
 		{
 		if( !is_callable( $fn ) )
 			return;
@@ -58,7 +58,7 @@ class MLPTableManager
 
 		return $results;
 		}
-	function walk_table_find( $table , $fname , $fdata , $string , $markup = false )
+	static function walk_table_find( $table , $fname , $fdata , $string , $markup = false )
 		{
 		$fndata = array(
 			'q'     => $string ,
@@ -70,7 +70,7 @@ class MLPTableManager
 		$results = MLPTableManager::walk_table_return_array( $table , $fname , $fdata , $fn , $fndata );
 		return $results;
 		}
-	function walk_table_replace_simple( $table , $fname , $fdata , $fstrings , $rstrings )
+	static function walk_table_replace_simple( $table , $fname , $fdata , $fstrings , $rstrings )
 		{
 		$fndata = array(
 			'fstrings'  => $fstrings ,
@@ -82,7 +82,7 @@ class MLPTableManager
 		$results = MLPTableManager::walk_table_return_array( $table , $fname , $fdata , $fn , $fndata );
 		return $results;
 		}
-	function replace_cb( $table , $row , $fndata )
+	static function replace_cb( $table , $row , $fndata )
 		{
 		extract( $fndata );
 		extract( $row );
@@ -99,7 +99,7 @@ class MLPTableManager
 
 		return $r;
 		}
-	function find_cb( $table , $row , $data )
+	static function find_cb( $table , $row , $data )
 		{
 		$markup    = false;
 		extract( $data );								# override the default value of 'markup' variable
@@ -136,7 +136,7 @@ class MLPTableManager
 
 class MLPArticles
 	{
-	function create_table()
+	static function create_table()
 		{
 		$db_charsetcollation = _l10n_get_db_charsetcollation();
 		$db_type = _l10n_get_dbserver_type();
@@ -149,25 +149,25 @@ class MLPArticles
 		$sql[] = ") $db_type $db_charsetcollation";
 		return safe_query( join('', $sql) );
 		}
-	function destroy_table()
+	static function destroy_table()
 		{
 		$sql = 'drop table `'.PFX.L10N_ARTICLES_TABLE.'`';
 		return safe_query( $sql );
 		}
-	function _get_article_info( $id )
+	static function _get_article_info( $id )
 		{
 		$info = safe_row( '*' , L10N_ARTICLES_TABLE , "`ID`='$id'" );
 		if( !empty($info) )
 			$info['members'] = unserialize( $info['members'] );
 		return $info;
 		}
-	function rendition_exists( $article_id , $long_lang )
+	static function rendition_exists( $article_id , $long_lang )
 		{
 		$info 	= MLPArticles::_get_article_info( $article_id );
 		$result = array_key_exists( $long_lang , $info['members'] );
 		return $result;
 		}
-	function create_article( $title , $members , $article_id=0 )
+	static function create_article( $title , $members , $article_id=0 )
 		{
 		$members = serialize( $members );
 		if( 0 === $article_id )
@@ -176,18 +176,18 @@ class MLPArticles
 			$article = safe_insert( L10N_ARTICLES_TABLE , "`names`='$title', `members`='$members', `ID`=$article_id" );
 		return $article;
 		}
-	function destroy_article( $article_id )
+	static function destroy_article( $article_id )
 		{
 		return safe_delete( L10N_ARTICLES_TABLE , "`ID`=$article_id" );
 		}
-	function _update_article( $article_id , $title , $members )
+	static function _update_article( $article_id , $title , $members )
 		{
 		$members = serialize( $members );
 		$title = doSlash( $title );
 		$article = safe_update( L10N_ARTICLES_TABLE , "`names`='$title', `members`='$members'" , "`ID`=$article_id" );
 		return $article;
 		}
-	function change_rendition_language( $article_id , $rendition_id , $rendition_lang , $target_lang )
+	static function change_rendition_language( $article_id , $rendition_id , $rendition_lang , $target_lang )
 		{
 		extract( MLPArticles::_get_article_info( $article_id ) );
 
@@ -204,7 +204,7 @@ class MLPArticles
 		$ok = MLPArticles::_update_article( $article_id , $names , $members );
 		return $ok;
 		}
-	function add_rendition( $article_id , $rendition_id , $rendition_lang , $check_membership = true , $insert_group = false , $name = '' )
+	static function add_rendition( $article_id , $rendition_id , $rendition_lang , $check_membership = true , $insert_group = false , $name = '' )
 		{
 		$info = MLPArticles::_get_article_info( $article_id );
 		if( empty( $info ) )
@@ -239,7 +239,7 @@ class MLPArticles
 			$ok = "Could not update article $article_id.";
 		return $ok;
 		}
-	function remove_rendition( $article_id , $rendition_id , $rendition_lang )
+	static function remove_rendition( $article_id , $rendition_id , $rendition_lang )
 		{
 		$g_info = MLPArticles::_get_article_info( $article_id );
 		if( empty($g_info) )
@@ -271,7 +271,7 @@ class MLPArticles
 
 		return $result;
 		}
-	function _add_mapping( $article_id , $mapping )
+	static function _add_mapping( $article_id , $mapping )
 		{
 		$info = MLPArticles::_get_article_info( $article_id );
 		if( empty( $info ) or (count($mapping)!==1) )
@@ -290,7 +290,7 @@ class MLPArticles
 		MLPArticles::_update_article( $article_id , $info['names'] , $mappings );
 		return true;
 		}
-	function create_article_and_add( $rendition )
+	static function create_article_and_add( $rendition )
 		{
 		$result = false;
 		$name = doSlash($rendition['Title']);
@@ -319,7 +319,7 @@ class MLPArticles
 			}
 		return $result;
 		}
-	function get_remaining_langs( $article_id )
+	static function get_remaining_langs( $article_id )
 		{
 		#
 		#	Returns an array of the site languages that do not have existing renditions in this article...
@@ -340,7 +340,7 @@ class MLPArticles
 
 		return $to_do;
 		}
-	function move_to_article( $rendition )
+	static function move_to_article( $rendition )
 		{
 		global $l10n_article_message;
 
@@ -392,7 +392,7 @@ class MLPArticles
 
 		return true;
 		}
-	function get_articles( $criteria , $sort_sql='ID' , $offset='0' , $limit='' )
+	static function get_articles( $criteria , $sort_sql='ID' , $offset='0' , $limit='' )
 		{
 		if( $offset == '0' and $limit == '' )
 			$rs = safe_rows_start('*', L10N_ARTICLES_TABLE, "$criteria order by $sort_sql" );
@@ -400,7 +400,7 @@ class MLPArticles
 			$rs = safe_rows_start('*', L10N_ARTICLES_TABLE, "$criteria order by $sort_sql limit $offset, $limit" );
 		return $rs;
 		}
-	function check_groups()
+	static function check_groups()
 		{
 		#
 		#	index => array( add|delete|skip , rendition-id , article-id , description );
@@ -485,17 +485,17 @@ class MLPArticles
 			}
 		return $result;
 		}
-	function get_total()
+	static function get_total()
 		{
 		return safe_count(L10N_ARTICLES_TABLE, "1" );
 		}
-	function retitle_article( $article_id , $new_title )
+	static function retitle_article( $article_id , $new_title )
 		{
 		$new_title = doSlash( $new_title );
 		$info = MLPArticles::_get_article_info( $article_id );
 		MLPArticles::_update_article( $article_id , $new_title , $info['members'] );
 		}
-	function force_integer_ids()
+	static function force_integer_ids()
 		{
 		#echo br , "Entering MLPArticles::force_integer_ids()";
 		$articles = MLPArticles::get_articles( '1=1' );
@@ -536,7 +536,7 @@ class MLPSnips
 	strings therein.
 	*/
 
-	function get_special_snippets()
+	static function get_special_snippets()
 		{
 		global $prefs;
 		$specials=array('snip-site_slogan');
@@ -563,7 +563,7 @@ class MLPSnips
 			}
 		return $specials;
 		}
-	function get_pattern( $name )
+	static function get_pattern( $name )
 		{
 		# Use the first snippet detection pattern for a simple snippet format that is visible when the substitution fails.
 		# Use the second snippet detection pattern if you want unmatched snippets as xhtml comments.
@@ -587,7 +587,7 @@ class MLPSnips
 			}
 		}
 
-	function find_snippets_in_block( &$thing , &$raw_snippet_count )
+	static function find_snippets_in_block( &$thing , &$raw_snippet_count )
 		{
 		/*
 		Scans the given block ($thing) for snippets and returns their names as the values of an array.
@@ -611,7 +611,7 @@ class MLPSnips
 		return $out;
 		}
 
-	function get_snippet_strings( $names , &$stats )
+	static function get_snippet_strings( $names , &$stats )
 		{
 		$result = array();
 
@@ -640,7 +640,7 @@ class MLPSnips
 
 class MLPStrings
 	{
-	function convert_case( $string , $convert = MB_CASE_TITLE )
+	static function convert_case( $string , $convert = MB_CASE_TITLE )
 		{
 		static $exists;
 
@@ -668,14 +668,14 @@ class MLPStrings
 
 		return $result;
 		}
-	function make_legend( $title , $args = null )
+	static function make_legend( $title , $args = null )
 		{
 		$title = gTxt( $title , $args );
 		$title = MLPStrings::convert_case( $title , MB_CASE_TITLE );
 		$title = tag( $title.'&#8230;', 'legend' );
 		return $title;
 		}
-	function strip_leading_section( $string , $delim='.' )
+	static function strip_leading_section( $string , $delim='.' )
 		{
 		/*
 		Simply removes anything that prefixes a string up to the delimiting character.
@@ -691,7 +691,7 @@ class MLPStrings
 		return $i;
 		}
 
-	function do_prefs_name( $plugin , $add = true )
+	static function do_prefs_name( $plugin , $add = true )
 		{
 		static $pfx;
 		static $pfx_len;
@@ -708,7 +708,7 @@ class MLPStrings
 			return substr( $plugin , $pfx_len );
 		}
 
-	function if_plugin_registered( $plugin , $lang , $count = 0 , $strings = null )
+	static function if_plugin_registered( $plugin , $lang , $count = 0 , $strings = null )
 		{
 		//echo br , "Checking [$plugin] ";
 		global $prefs;
@@ -776,7 +776,7 @@ class MLPStrings
 		return $details;
 		}
 
-	function register_plugin( $plugin , $pfx , $string_count , $lang , $event , &$strings )
+	static function register_plugin( $plugin , $pfx , $string_count , $lang , $event , &$strings )
 		{
 		//echo br , "register_plugin( $plugin , $pfx , $string_count , $lang , $event , $strings )";
 		$keys = serialize( array_keys($strings) );
@@ -803,7 +803,7 @@ class MLPStrings
 		return $result;
 		}
 
-	function unregister_plugin( $plugin )
+	static function unregister_plugin( $plugin )
 		{
 		global $prefs;
 		$name = doSlash( MLPStrings::do_prefs_name( $plugin ) );
@@ -812,7 +812,7 @@ class MLPStrings
 		return $ok;
 		}
 
-	function insert_strings( $pfx , &$strings , $lang , $event='' , $owner='' , $override = false )
+	static function insert_strings( $pfx , &$strings , $lang , $event='' , $owner='' , $override = false )
 		{
 		$debug = 0;
 		if( $debug )
@@ -879,7 +879,7 @@ class MLPStrings
 		return true;
 		}
 
-	function store_translation_of_string( $name , $event , $new_lang , $translation , $id='' , $owner = '' )
+	static function store_translation_of_string( $name , $event , $new_lang , $translation , $id='' , $owner = '' )
 		{
 		/*
 		Can create, delete or update a row in the DB depending upon the calling arguments.
@@ -920,7 +920,7 @@ class MLPStrings
 		return $result;
 		}
 
-	function remove_strings( $plugin , $remove_lang , $debug = '' )
+	static function remove_strings( $plugin , $remove_lang , $debug = '' )
 		{
 		/*
 		PLUGIN SUPPORT ROUTINE
@@ -942,7 +942,7 @@ class MLPStrings
 			}
 		}
 
-	function remove_strings_by_name( &$strings , $event = '' , $plugin='' , $lang='' )
+	static function remove_strings_by_name( &$strings , $event = '' , $plugin='' , $lang='' )
 		{
 		/*
 		Uses the keys of the strings array to remove all of the named strings in EITHER ...
@@ -994,7 +994,7 @@ class MLPStrings
 		return $result;
 		}
 
-	function load_strings_into_textarray( $lang )
+	static function load_strings_into_textarray( $lang )
 		{
 		/*
 		PUBLIC/ADMIN INTERFACE SUPPORT ROUTINE
@@ -1007,7 +1007,7 @@ class MLPStrings
 		$textarray = array_merge( $textarray , $extras );
 		return count( $extras );
 		}
-	function remove_lang( $lang , $debug = '' )
+	static function remove_lang( $lang , $debug = '' )
 		{
 		$lang = doSlash( $lang );
 		$where = " `lang`='$lang'";
@@ -1015,7 +1015,7 @@ class MLPStrings
 		safe_optimize( 'txp_lang' , $debug );
 		}
 
-	function load_strings( $lang , $filter='' )
+	static function load_strings( $lang , $filter='' )
 		{
 		/*
 		PUBLIC/ADMIN INTERFACE SUPPORT ROUTINE
@@ -1037,7 +1037,7 @@ class MLPStrings
 		return $extras;
 		}
 
-	function serialize_strings( $lang , $owner , $prefix , $event )
+	static function serialize_strings( $lang , $owner , $prefix , $event )
 		{
 		$r = array	(
 					'owner'		=> $owner,		#	Name the plugin these strings are for.
@@ -1052,7 +1052,7 @@ class MLPStrings
 		return $result;
 		}
 
-	function discover_registered_plugins()
+	static function discover_registered_plugins()
 		{
 		/*
 		ADMIN INTERFACE SUPPORT ROUTINE
@@ -1073,7 +1073,7 @@ class MLPStrings
 		return $result;
 		}
 
-	function get_strings( &$rs , &$stats )
+	static function get_strings( &$rs , &$stats )
 		{
 		$result = array();
 		if( $rs && mysql_num_rows($rs) > 0 )
@@ -1115,7 +1115,7 @@ class MLPStrings
 		return $result;
 		}
 
-	function get_plugin_strings( $plugin , &$stats , $prefix )
+	static function get_plugin_strings( $plugin , &$stats , $prefix )
 		{
 		/*
 		ADMIN INTERFACE SUPPORT ROUTINE
@@ -1137,7 +1137,7 @@ class MLPStrings
 		return MLPStrings::get_strings( $rs , $stats );
 		}
 
-	function is_complete( $langs , $use_admin = false )
+	static function is_complete( $langs , $use_admin = false )
 		{
 		static $public_langs , $admin_langs;
 
@@ -1170,7 +1170,7 @@ class MLPStrings
 		return $complete;
 		}
 
-	function get_string_set( $string_name , $string_event='' )
+	static function get_string_set( $string_name , $string_event='' )
 		{
 		/*
 		Given a string name, will extract an array of the matching translations.
@@ -1198,7 +1198,7 @@ class MLPStrings
 		return $result;
 		}
 
-	function make_nameset( $names )
+	static function make_nameset( $names )
 		{
 		if( !is_array( $names ) )
 			$names = array( $names );
@@ -1216,7 +1216,7 @@ class MLPStrings
 
 		return $name_set;
 		}
-	function get_set_by_lang( $nameset , $lang )
+	static function get_set_by_lang( $nameset , $lang )
 		{
 		$result = array();
 
@@ -1233,7 +1233,7 @@ class MLPStrings
 			}
 		return $result;
 		}
-	function get_set_by_name( $langset , $name )
+	static function get_set_by_name( $langset , $name )
 		{
 		$result = array();
 
@@ -1250,7 +1250,7 @@ class MLPStrings
 			}
 		return $result;
 		}
-	function build_txp_langfile( $lang , $exclude_plugins = true , $media = 'file' )
+	static function build_txp_langfile( $lang , $exclude_plugins = true , $media = 'file' )
 		{
 		$full_name = MLPLanguageHandler::get_native_name_of_lang( $lang );
 		$where = " `lang`='$lang' ";
@@ -1316,14 +1316,14 @@ class MLPStrings
 		return $out;
 		}
 
-	function comment_block( $comment , $tabs=0 , $leading=1 )
+	static function comment_block( $comment , $tabs=0 , $leading=1 )
 		{
 		$o = str_repeat( str_repeat( t , $tabs ).'#'.n , $leading );
 		$o.= str_repeat( t , $tabs ).'#'.t.$comment.n;
 		$o.= str_repeat( str_repeat( t , $tabs ).'#' , $leading );
 		return $o;
 		}
-	function dmp_array( $name , &$vals )
+	static function dmp_array( $name , &$vals )
 		{
 		global $$name , $textarray;
 
@@ -1362,7 +1362,7 @@ class MLPStrings
 		$o[] = t.');';
 		return join( n,$o );
 		}
- 	function build_l10n_default_strings_file( $lang )
+ 	static function build_l10n_default_strings_file( $lang )
 		{
 		$langs = MLPLanguageHandler::get_installation_langs();
 
@@ -1630,7 +1630,7 @@ class MLPPlugin extends GBPPlugin
 		{
 		static $result;
 		if (!isset($result) || $recheck)
-			$result = MLPWizView::installed();
+			$result = l10n_installed();
 		return $result;
 		}
 
