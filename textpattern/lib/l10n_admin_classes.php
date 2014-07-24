@@ -144,8 +144,8 @@ class MLPArticles
 		$sql = array();
 		$sql[] = 'CREATE TABLE IF NOT EXISTS `'.PFX.L10N_ARTICLES_TABLE.'` (';
 		$sql[] = '`ID` INT( 11 ) NOT NULL AUTO_INCREMENT PRIMARY KEY , ';
-		$sql[] = "`names` TEXT NOT NULL , ";
-		$sql[] = "`members` TEXT NOT NULL";
+		$sql[] = "`names` TEXT NULL , ";
+		$sql[] = "`members` TEXT NULL";
 		$sql[] = ") $db_type $db_charsetcollation";
 		return safe_query( join('', $sql) );
 		}
@@ -4981,11 +4981,11 @@ class MLPWizView extends GBPWizardTabView
 
 		$this->add_report_item( gTxt('l10n-setup_1_title') );
 
-		$sql = " CHANGE `data` `data` TEXT NULL DEFAULT NULL";
+		$sql = " CHANGE `data` `data` TEXT NULL";
 		$ok = safe_alter( 'txp_lang' , $sql );
 		$this->add_report_item( gTxt('l10n-setup_1_extend') , $ok , true );
 
-		$sql = "ADD `".L10N_COL_OWNER."` TINYTEXT NOT NULL DEFAULT '' AFTER `data`";
+		$sql = "ADD `".L10N_COL_OWNER."` TINYTEXT NULL AFTER `data`";
 		$ok = safe_alter( 'txp_lang' , $sql );
 		$this->add_report_item( gTxt('l10n-add_field',array('{field}'=>L10N_COL_OWNER ,'{table}'=>'txp_lang')) , $ok , true );
 		}
