@@ -473,7 +473,11 @@ if (@txpinterface === 'public')
 		#
 		if ($prefs['l10n_l10n-url_default_lang_marker'] === '1' || isset($_SESSION['l10n_request_uri']))
 		{
-			$pretext['request_uri'] = $_SERVER['REQUEST_URI'] = $_SESSION['l10n_request_uri'];
+			if (isset($_SESSION['l10n_request_uri'])) {
+				$pretext['request_uri'] = $_SERVER['REQUEST_URI'] = $_SESSION['l10n_request_uri'];
+			} else {
+				$pretext['request_uri'] = $_SESSION['l10n_request_uri'] = $_SERVER['REQUEST_URI'];
+			}
 		}
 
 		#
