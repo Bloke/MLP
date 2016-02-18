@@ -1,17 +1,76 @@
 <?php
 
+// This is a PLUGIN TEMPLATE for Textpattern CMS.
+
+// Copy this file to a new name like abc_myplugin.php.  Edit the code, then
+// run this file at the command line to produce a plugin for distribution:
+// $ php abc_myplugin.php > abc_myplugin-0.1.txt
+
+// Plugin name is optional.  If unset, it will be extracted from the current
+// file name. Plugin names should start with a three letter prefix which is
+// unique and reserved for each plugin author ("abc" is just an example).
+// Uncomment and edit this line to override:
 $plugin['name'] = 'l10n';
-$plugin['version'] = '4.5.4-01';
-$plugin['author'] = 'Graeme Porteous & Steve (Netcarver)';
+
+// Allow raw HTML help, as opposed to Textile.
+// 0 = Plugin help is in Textile format, no raw HTML allowed (default).
+// 1 = Plugin help is in raw HTML.  Not recommended.
+# $plugin['allow_html_help'] = 1;
+
+$plugin['version'] = '4.6.0.20160216';
+$plugin['author'] = 'Graeme Porteous, Steve Dickinson, Stef Dawson';
 $plugin['author_uri'] = 'http://txp-plugins.netcarving.com/plugins/mlp-plugin';
 $plugin['description'] = 'Multi-Lingual Publishing Package.';
-$plugin['type'] = '5';
-$plugin['order'] = 1;	# Make sure we get first shot at incomming url requests
 
-@include_once('../zem_tpl.php');
+// Plugin load order:
+// The default value of 5 would fit most plugins, while for instance comment
+// spam evaluators or URL redirectors would probably want to run earlier
+// (1...4) to prepare the environment for everything else that follows.
+// Values 6...9 should be considered for plugins which would work late.
+// This order is user-overrideable.
+$plugin['order'] = '0';
+
+// Plugin 'type' defines where the plugin is loaded
+// 0 = public              : only on the public side of the website (default)
+// 1 = public+admin        : on both the public and admin side
+// 2 = library             : only when include_plugin() or require_plugin() is called
+// 3 = admin               : only on the admin side (no AJAX)
+// 4 = admin+ajax          : only on the admin side (AJAX supported)
+// 5 = public+admin+ajax   : on both the public and admin side (AJAX supported)
+$plugin['type'] = '5';
+
+// Plugin "flags" signal the presence of optional capabilities to the core plugin loader.
+// Use an appropriately OR-ed combination of these flags.
+// The four high-order bits 0xf000 are available for this plugin's private use
+if (!defined('PLUGIN_HAS_PREFS')) define('PLUGIN_HAS_PREFS', 0x0001); // This plugin wants to receive "plugin_prefs.{$plugin['name']}" events
+if (!defined('PLUGIN_LIFECYCLE_NOTIFY')) define('PLUGIN_LIFECYCLE_NOTIFY', 0x0002); // This plugin wants to receive "plugin_lifecycle.{$plugin['name']}" events
+
+$plugin['flags'] = '0';
+
+// Plugin 'textpack' is optional. It provides i18n strings to be used in conjunction with gTxt().
+// Syntax:
+// ## arbitrary comment
+// #@event
+// #@language ISO-LANGUAGE-CODE
+// abc_string_name => Localized String
+
+/** Uncomment me, if you need a textpack
+$plugin['textpack'] = <<< EOT
+#@admin
+#@language en-gb
+abc_sample_string => Sample String
+abc_one_more => One more
+#@language de-de
+abc_sample_string => Beispieltext
+abc_one_more => Noch einer
+EOT;
+**/
+// End of textpack
+
+if (!defined('txpinterface'))
+        @include_once('zem_tpl.php');
 
 # --- BEGIN PLUGIN CODE ---
-
 // require_plugin() will reset the $txp_current_plugin global
 global $txp_current_plugin;
 $l10n_current_plugin = $txp_current_plugin;
@@ -105,7 +164,7 @@ function _l10n_process_url( $use_get_params=false )
 	$new_first_path = '';
 	$debug = (0) && (@txpinterface === 'public');
 
-	l10n_session_start();
+	Txp::get('\Netcarver\MLP\Kickstart')->l10n_session_start();
 	$site_langs = MLPLanguageHandler::get_site_langs();
 
 	$req_method = serverSet('REQUEST_METHOD');
@@ -374,7 +433,7 @@ if( @txpinterface === 'admin' )
 	$prefs['db_process_result_func'] = '_l10n_process_pageform_access';
 
 	#	Switch admin lang if needed...
-	if( l10n_installed( true ) )
+	if( Txp::get('\Netcarver\MLP\Kickstart')->l10n_installed( true ) )
 		{
 		_l10n_process_url( true );
 		if( LANG !== $l10n_language['long'] and LANG !== $l10n_language['short'] )
@@ -414,7 +473,7 @@ if( @txpinterface === 'admin' )
 # -- Public code section follows...
 if (@txpinterface === 'public')
 	{
-	$installed = l10n_installed( true );
+	$installed = Txp::get('\Netcarver\MLP\Kickstart')->l10n_installed( true );
 	if( !$installed )
 		return '';
 
@@ -783,7 +842,7 @@ if (@txpinterface === 'public')
 	function _l10n_get_rendition_id( $article_id , $debug=0 )
 		{
 		global $l10n_language;
-		
+
 		$article_id = (int)$article_id;
 		$where = '`'.L10N_COL_GROUP.'`=\''.$article_id.'\' and `Status`>=4 and `'.L10N_COL_LANG.'`=\''.$l10n_language['long'].'\'';
 		$rendition_id = safe_field( 'ID' , L10N_MASTER_TEXTPATTERN , $where , $debug);
@@ -905,7 +964,7 @@ if (@txpinterface === 'public')
 			{
 			# echo br , 'Processing by category or author : ';
 			$info = safe_rows_start( 'name,lang,data' , 'txp_lang' , "`name` IN ('category','author')" );
-			if( $info and mysql_num_rows($info) > 0 )
+			if( $info and mysqli_num_rows($info) > 0 )
 				{
 				while( $r = nextRow($info) )
 					{
@@ -1302,9 +1361,10 @@ function l10n_language_marker( $atts )
 
 	return $callback_language_marker;
 	}
-
 # --- END PLUGIN CODE ---
-/*
+if (0) {
+?>
+<!--
 # --- BEGIN PLUGIN CSS ---
 <style type="text/css">
 div#l10n_help td { vertical-align:top; }
@@ -1319,6 +1379,8 @@ div#l10n_help ul ul { font-size:85%; }
 div#l10n_help h3 { color: #693; font: bold 12px Arial, sans-serif; letter-spacing: 1px; margin: 10px 0 0;text-transform: uppercase; margin-bottom: 12px; }
 </style>
 # --- END PLUGIN CSS ---
+-->
+<!--
 # --- BEGIN PLUGIN HELP ---
 notextile. <div id="l10n_help">
 
@@ -1931,5 +1993,7 @@ The following people supported the development of the MLP Pack and made it avail
 
 notextile. </div>
 # --- END PLUGIN HELP ---
-*/
+-->
+<?php
+}
 ?>

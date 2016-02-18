@@ -9,7 +9,7 @@ global $l10n_language , $l10n_default_string_lang;
 # bring in the defaults...
 #
 $l10n_langname = LANG;
-$installed = l10n_installed();
+$installed = Txp::get('\Netcarver\MLP\Kickstart')->l10n_installed();
 if( $installed )
 	$l10n_langname = $l10n_language['long'];
 
@@ -46,7 +46,7 @@ class MLPTableManager
 		$results = array();
 
 		$rs = safe_rows_start( "$fname as name, $fdata as data", $table, '1=1' ) ;
-		if( $rs && mysql_num_rows($rs) > 0 )
+		if( $rs && mysqli_num_rows($rs) > 0 )
 			{
 			while ( $row = nextRow($rs) )
 				{
@@ -1028,7 +1028,7 @@ class MLPStrings
 			$close = 'OR event=\'admin\' )';
 
 		$rs = safe_rows_start('name, data, '.L10N_COL_OWNER ,'txp_lang','lang=\''.doSlash($lang).'\'' . $where . $close . $filter );
-		$count = @mysql_num_rows($rs);
+		$count = @mysqli_num_rows($rs);
 		if( $rs && $count > 0 )
 			{
 			while ( $a = nextRow($rs) )
@@ -1076,7 +1076,7 @@ class MLPStrings
 	static function get_strings( &$rs , &$stats )
 		{
 		$result = array();
-		if( $rs && mysql_num_rows($rs) > 0 )
+		if( $rs && mysqli_num_rows($rs) > 0 )
 			{
 			while ( $a = nextRow($rs) )
 				{
@@ -1182,7 +1182,7 @@ class MLPStrings
 		if( $string_event )
 			$where .= ' AND `event`="' . doSlash($string_event) . '"';
 		$rs = safe_rows_start( 'lang, id, event, data, '.L10N_COL_OWNER , 'txp_lang', $where );
-		if( $rs && mysql_num_rows($rs) > 0 )
+		if( $rs && mysqli_num_rows($rs) > 0 )
 			{
 			while ( $a = nextRow($rs) )
 				{
@@ -1222,7 +1222,7 @@ class MLPStrings
 
 		$where = ' `name` IN ('.$nameset.') AND `lang` = "'.doSlash($lang).'"';
 		$rs = safe_rows_start( 'name,data,event', 'txp_lang', $where );
-		if( $rs && mysql_num_rows($rs) > 0 )
+		if( $rs && mysqli_num_rows($rs) > 0 )
 			{
 			while ( $a = nextRow($rs) )
 				{
@@ -1239,7 +1239,7 @@ class MLPStrings
 
 		$where = ' `lang` IN ('.$langset.') AND `name` = "'.doSlash($name).'"';
 		$rs = safe_rows_start( 'lang,data,event', 'txp_lang', $where );
-		if( $rs && mysql_num_rows($rs) > 0 )
+		if( $rs && mysqli_num_rows($rs) > 0 )
 			{
 			while ( $a = nextRow($rs) )
 				{
@@ -1630,7 +1630,7 @@ class MLPPlugin extends GBPPlugin
 		{
 		static $result;
 		if (!isset($result) || $recheck)
-			$result = l10n_installed();
+			$result = Txp::get('\Netcarver\MLP\Kickstart')->l10n_installed();
 		return $result;
 		}
 
@@ -2161,7 +2161,7 @@ class MLPStringView extends GBPAdminTabView
 				$where .= " AND `lang`='$lang'";
 
 			$rs = safe_rows_start( 'DISTINCT name,data,lang', 'txp_lang', $where . " ORDER BY name ASC LIMIT 200" );
-			$count = @mysql_num_rows($rs);
+			$count = @mysqli_num_rows($rs);
 			}
 
 		if( $rs and $count > 0 )
@@ -2369,7 +2369,7 @@ class MLPStringView extends GBPAdminTabView
 	function _generate_list( $table , $fname , $fdata )						# left pane subroutine
 		{
 		$rs = safe_rows_start( "$fname as name, $fdata as data", $table, '1=1 ORDER BY '.$fname ) ;
-		if( $rs && mysql_num_rows($rs) > 0 )
+		if( $rs && mysqli_num_rows($rs) > 0 )
 			{
 			$can_edit = $this->pref('l10n-inline_editing');
 			$explain = false;
@@ -3610,6 +3610,7 @@ class MLPArticleView extends GBPAdminTabView
 
 	function _clone_rendition( $source , $article_id , $target_lang , $new_author='' )
 		{
+		global $DB;
 		unset( $source['ID' ] );
 		if( !empty( $new_author ) )
 			$source['AuthorID'] = $new_author;
@@ -3635,7 +3636,7 @@ class MLPArticleView extends GBPAdminTabView
 		#	Insert into the master textpattern table...
 		#
 		safe_insert( 'textpattern' , $insert_sql );
-		$rendition_id = mysql_insert_id();
+		$rendition_id = mysqli_insert_id($DB->link);
 
 		#
 		#	Add this to the group (article) table...
@@ -4603,7 +4604,7 @@ class MLPWizView extends GBPWizardTabView
 
 	function installed()
 		{
-		return l10n_installed();
+		return Txp::get('\Netcarver\MLP\Kickstart')->l10n_installed();
 		}
 
 	function get_strings( $language = '' )
@@ -4647,7 +4648,7 @@ class MLPWizView extends GBPWizardTabView
 
 	function get_required_versions()
 		{
-		global $prefs;
+		global $prefs, $DB;
 
 		$can_setup_cleanup = (gps( 'skip-wiz-privilege-check' )) ? true : $this->can_install();
 
@@ -4661,7 +4662,7 @@ class MLPWizView extends GBPWizardTabView
 						'min'		=> '5.2.0' ,
 						),
 					'MySQL'  => array(
-						'current'	=> mysql_get_server_info() ,
+						'current'	=> $DB->version ,
 						'min'		=> '4.1' ,
 						),
 					);
@@ -4814,10 +4815,10 @@ class MLPWizView extends GBPWizardTabView
 		}
 	function can_install()
 		{
-		global $txpcfg;
+		global $txpcfg, $DB;
 		$host  = $txpcfg['host'];
 		$user  = $txpcfg['user'];
-		$version = mysql_get_server_info();
+		$version = $DB->version;
 		$matched = false;
 
 		$debug = gps( 'debugwiz' );
@@ -5044,7 +5045,7 @@ class MLPWizView extends GBPWizardTabView
 		#
 		#	Reset the session variable (in case of a language switch and then a reinstall)...
 		#
-		l10n_session_start();
+		Txp::get('\Netcarver\MLP\Kickstart')->l10n_session_start();
 		$temp = LANG;
 		$tmp = substr( $temp , 0 , 2 );
 		if( !empty($temp) )
@@ -5209,6 +5210,7 @@ class MLPWizView extends GBPWizardTabView
 		# Create the first instances of the language tables as straight copies of the existing
 		# textpattern table so users on the public side still see everything until we start editing
 		# articles.
+		global $DB;
 		$langs = $this->pref('l10n-languages');
 		$this->add_report_item( gTxt('l10n-op_tables',array('{op}'=>'Add' ,'{tables}'=>'per-language article')).'&#8230;' );
 		foreach( $langs as $lang )
@@ -5219,7 +5221,7 @@ class MLPWizView extends GBPWizardTabView
 
 			$sql = "create table `".PFX."$table_name` $indexes ENGINE=MyISAM select * from `".PFX."textpattern` where `".L10N_COL_LANG."`='$lang'";
 			$ok = safe_query( $sql );
-			if (mysql_error() == "Table '".PFX."$table_name' already exists")
+			if (mysqli_error($DB->link) == "Table '".PFX."$table_name' already exists")
 				$ok = 'skipped';
 
 			$this->add_report_item( gTxt('l10n-op_table',array('{op}'=>'Add' ,'{table}'=>MLPLanguageHandler::get_native_name_of_lang( $lang ).' ['.$table_name.']')) , $ok , true );
@@ -5407,7 +5409,7 @@ class MLPWizView extends GBPWizardTabView
 		# language to the site default...
 		$where = "1";
 		$rs = safe_rows_start( 'ID , Title , '.L10N_COL_LANG.' , `'.L10N_COL_GROUP.'`' , 'textpattern' , $where );
-		$count = @mysql_num_rows($rs);
+		$count = @mysqli_num_rows($rs);
 
 		$i = 0;
 		if( $rs && $count > 0 )

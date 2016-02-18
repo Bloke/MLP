@@ -2,38 +2,16 @@
 
 if( !defined( 'txpinterface' ) ) exit;
 
-global $l10n_vars, $l10n_painters, $l10n_release_version;
+global $l10n_vars, $l10n_painters;
 $l10n_vars = array();
 $l10n_mappings = null;
 $l10n_painters = array();
 
 if( $l10n_view->installed() )
 	{
-	#
-	#	Detect the dirty-flag and re-build tables...
-	#
-	global $prefs, $app_mode;
+	global $app_mode;
 
-	if( @$prefs[L10N_DIRTY_FLAG_VARNAME] === 'DIRTY' )
-		{
-		# Ensure new indexes (indices) are present in case of upgrade...
-		_l10n_check_index();
-		safe_optimize('textpattern');
-
-		# Iterate over the site languages, rebuilding the tables...
-		$langs = MLPLanguageHandler::get_site_langs();
-		foreach( $langs as $lang )
-			{
-			_l10n_generate_lang_table( $lang );
-			_l10n_generate_localise_table_fields( $lang );
-			}
-
-		# Clear the dirty flag...
-		_l10n_update_dirty_flag( '' );
-
-		# Update the installed version number
-		set_pref( 'l10n_version', $l10n_release_version , 'l10n', PREF_HIDDEN );
-		}
+	Txp::get('\Netcarver\MLP\Kickstart')->l10n_upgrade();
 
 	#
 	#	Observers...
@@ -226,7 +204,7 @@ function _l10n_check_index()
 
 	$sql = array();
 	$has_lang_index = $has_group_index = false;
-	
+
 	$rs = getRows('show index from `'.PFX.'textpattern`');
 	foreach ($rs as $row)
 		{
@@ -242,7 +220,7 @@ function _l10n_check_index()
 		$sql[] = 'ADD INDEX(`'.L10N_COL_GROUP.'`)';
 
 	if($debug) dmp($sql);
-	
+
 	if( !empty( $sql ) )
 		{
 		$ok = safe_alter( 'textpattern' , join(',', $sql) , $debug );
@@ -803,17 +781,17 @@ function _l10n_article_buffer_processor( $buffer )
 	#
 	#	Insert the ID/Language/Group display elements...
 	#
-	
+
 	#	Find strings for different versions...
 	$find[] = '<p><input type="text" id="title"';
 	$find[] = '<p><label for="title"';
-	
+
 	$f = $find[0];
 	foreach( $find as $v )
 		{
 		if( false === strpos( $buffer , $v ) )
 			continue;
-		
+
 		$f = $v;
 		}
 
@@ -1175,13 +1153,6 @@ function _l10n_observe_table_changes( $event , $step )
 	set_pref('l10n_hashes', serialize($hash_table), 'l10n', PREF_HIDDEN);
 }
 
-function _l10n_update_dirty_flag( $v )
-	{
-	global $prefs;
-	set_pref( L10N_DIRTY_FLAG_VARNAME, $v , 'l10n', 2 );
-	$prefs[L10N_DIRTY_FLAG_VARNAME] = $v;
-	}
-
 function _l10n_check_lang_code( $lang )
 	{
 	if( !is_string( $lang ) )
@@ -1382,7 +1353,7 @@ function _l10n_sync_table_definitions( $source = array() )
 									$sql[] = 'MODIFY ' .$field. ' ' .$type . ($null === 'NO' ? ' NOT NULL' : ' NULL') . ($default ? ' DEFAULT "'.$default.'"' : '') . ' ' .$extra;
 								}
 
-							//Removing each found item from the destination table serves two putposes:
+							// Removing each found item from the destination table serves two purposes:
 							// 1) it speeds the loop up as things move forward
 							// 2) it means that any fields left over by the time the loop ends are fields that need removing
 							unset($rs[$found]);

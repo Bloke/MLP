@@ -176,7 +176,8 @@ function _l10n_get_db_charsetcollation()
 	}
 function _l10n_get_dbserver_type()
 	{
-	$version = mysql_get_server_info();
+	global $DB;
+	$version = $DB->version;
 	//Use ENGINE if version of MySQL > (4.0.18 or 4.1.2)
 	$type = ( intval($version[0]) >= 5 || preg_match('#^4\.(0\.[2-9]|(1[89]))|(1\.[2-9])#',$version))
 					? 'ENGINE=MyISAM'
