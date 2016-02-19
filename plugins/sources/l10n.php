@@ -99,6 +99,18 @@ if( !defined( 'L10N_MASTER_TEXTPATTERN' ) )
 if( !defined( 'L10N_SNIPPET_PATTERN' ) )
 	define( 'L10N_SNIPPET_PATTERN' , '/##([\w|\.|\-]+)##/' );
 
+// Register tags if necessary.
+if (class_exists('\Textpattern\Tag\Registry')) {
+    Txp::get('\Textpattern\Tag\Registry')
+        ->register('l10n_lang_list')
+        ->register('l10n_if_lang')
+        ->register('l10n_get_lang')
+        ->register('l10n_get_lang_dir')
+        ->register('l10n_permlink')
+        ->register('l10n_inject_lang')
+        ->register('l10n_rendition_lang');
+}
+
 function _l10n_set_browse_language( $code , $long ,  $debug=false )
 	{
 	#
@@ -1419,14 +1431,11 @@ h2. Table Of Contents.
 
 h2(#intro). Introduction &amp; Setup/Cleanup
 
-The MLP(Multi-Lingual Publishing) Pack is an add-on pack for Textpattern 4.0.4 and 4.0.5 that helps turn it into a productive MLP platform -- or at least, that is its intended aim.
+The MLP(Multi-Lingual Publishing) Pack is an add-on pack for Textpattern that helps turn it into a productive MLP platform -- or at least, that is its intended aim.
 
-It is *not* implemented as a 'pure' plugin as it&#8230;
+It is *not* implemented as a 'pure' plugin as it uses an altered version of the @txplib_db.php@ file.
 
-* exceeds the plugin size limit
-* uses an altered version of the txplib_db.php file
-
-_If you are looking for a pure TxP plugin then this is not the option for you._
+_If you are looking for a pure Textpattern plugin then this is not the option for you._
 
 <br/>
 
@@ -1435,7 +1444,7 @@ Other things you might like to think about before installing the pack&#8230;
 * *It does not support subdirectory installations.*
 * It makes some extensive additions to the underlying database, notably a new 'textpattern' table per language you run the site in.
 * The 'articles' tab output is filtered using a temporary SQL table that hides the underlying table and allows additional filtering by language.
-* Changes are made to the basic txp_lang and textpattern tables.
+* Changes are made to the basic @txp_lang@ and @textpattern@ tables.
 
 All these are listed in the setup wizard (under the content > MLP tab).
 
