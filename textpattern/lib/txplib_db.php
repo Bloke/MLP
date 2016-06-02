@@ -4,7 +4,7 @@
  * Textpattern Content Management System
  * http://textpattern.com
  *
- * Copyright (C) 2015 The Textpattern Development Team
+ * Copyright (C) 2016 The Textpattern Development Team
  *
  * This file is part of Textpattern, modified by the Multi-lingual
  * Publishing Pack (MLP).
@@ -389,7 +389,7 @@ function safe_escape_like($in = '')
 
 function safe_query($q = '', $debug = false, $unbuf = false)
 {
-    global $DB, $txpcfg, $txptrace_qcount, $txptrace_qtime, $production_status;
+    global $DB, $txpcfg, $trace, $production_status;
     $method = ($unbuf) ? MYSQLI_USE_RESULT : MYSQLI_STORE_RESULT;
 
     if (!$q) {
@@ -400,17 +400,19 @@ function safe_query($q = '', $debug = false, $unbuf = false)
         dmp($q);
     }
 
-    $start = getmicrotime();
+    if ($production_status !== 'live') {
+        $trace->start("[SQL: $q ]", true);
+    }
+
     $result = mysqli_query($DB->link, $q, $method);
-    $time = getmicrotime() - $start;
-    @$txptrace_qtime += $time;
-    @$txptrace_qcount++;
+
+    if ($production_status !== 'live') {
+        $trace->stop();
+    }
 
     if ($result === false) {
         trigger_error(mysqli_error($DB->link), E_USER_ERROR);
     }
-
-    trace_add('[SQL ('.number_format($time, 6, '.', '')."): $q]");
 
     if (!$result) {
         return false;
