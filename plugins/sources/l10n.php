@@ -572,7 +572,7 @@ if (@txpinterface === 'public')
 
 	function _l10n_pretext()
 		{
-		global $l10n_language , $textarray , $prefs;
+		global $l10n_language , $textarray , $prefs, $trace;
 
 		$first_chunk = _l10n_process_url();
 
@@ -584,7 +584,7 @@ if (@txpinterface === 'public')
 		#
 		if( LANG !== $l10n_language['long'] and LANG !== $l10n_language['short'] )
 			{
-			trace_add( "L10N MLP: Switching to {$l10n_language['long']} from " . LANG );
+			$trace->log( "L10N MLP: Switching to {$l10n_language['long']} from " . LANG );
 			$textarray = load_lang( $l10n_language['long'] );
 			$prefs['language'] = $l10n_language['long'];
 			}
