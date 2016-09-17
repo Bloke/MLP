@@ -229,7 +229,7 @@ class DB
         $this->default_charset = mysqli_character_set_name($this->link);
 
         // Use "ENGINE" if version of MySQL > (4.0.18 or 4.1.2).
-        if (intval($version[0]) >= 5 || preg_match('#^4\.(0\.[2-9]|(1[89]))|(1\.[2-9])#', $version)) {
+        if (version_compare($version, '5') >= 0 || preg_match('#^4\.(0\.[2-9]|(1[89]))|(1\.[2-9])#', $version)) {
             $this->table_options['engine'] = 'MyISAM';
             unset($this->table_options['type']);
         }
@@ -1488,11 +1488,12 @@ eod;
  * the txp_file table.
  *
  * @param  string $type   Column name, lower case (one of 'posted', 'expires', 'created')
- * @param  bool   $update Force update 
+ * @param  bool   $update Force update
  * @return string SQL query string partial
  */
 
-function now($type, $update = false) {
+function now($type, $update = false)
+{
     static $nows = array();
     static $time = null;
 
@@ -1514,7 +1515,7 @@ function now($type, $update = false) {
             $table = ($type === 'created') ? 'txp_file' : 'textpattern';
             $where = '1=1 having utime > '.$time.' order by utime asc limit 1';
             $now = safe_field('unix_timestamp('.$type.') as utime', $table, $where);
-            $now = ($now === false) ? 2147483647 : intval($now) - 1; 
+            $now = ($now === false) ? 2147483647 : intval($now) - 1;
             update_pref($pref, $now);
             $nows[$type] = $now;
         }
