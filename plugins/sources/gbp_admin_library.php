@@ -75,7 +75,8 @@ if (!defined('txpinterface'))
 define('gbp_tab', 'tab');
 define('gbp_id', 'id');
 
-class GBPPlugin {
+class GBPPlugin
+{
 	// Internal variables
 	var $plugin_name;
 	var $title;
@@ -91,7 +92,7 @@ class GBPPlugin {
 	var $wizard_installed = false;
 
 	// Constructor
-	function GBPPlugin ($title = '', $event = '', $parent_tab = '') {
+	public function __construct($title = '', $event = '', $parent_tab = '') {
 
 		global $txp_current_plugin;
 
@@ -162,7 +163,7 @@ class GBPPlugin {
 			$this->load_preferences();
 	}
 
-	function load_preferences () {
+	public function load_preferences () {
 		/*
 		Grab and store all preferences with event matching this plugin, combine gbp_partial
 		rows and decode the value if it's of custom type.
@@ -215,7 +216,7 @@ class GBPPlugin {
 		}
 	}
 
-	function set_preference ($key, $value, $type = '') {
+	public function set_preference ($key, $value, $type = '') {
 		global $prefs, $txp_current_plugin;
 
 		// If the plugin_name or event isn't set is it safe to assume
@@ -269,12 +270,12 @@ class GBPPlugin {
 		}
 	}
 
-	function remove_preference ($key) {
+	public function remove_preference ($key) {
 		$event = $this->event;
 		safe_delete('txp_prefs', "event = '$event' AND ((name LIKE '$key') OR (name LIKE '{$key}_%' AND html = 'gbp_partial'))");
 	}
 
-	function gbp_serialized ($step, $value, $item = '') {
+	public function gbp_serialized ($step, $value, $item = '') {
 		switch (strtolower($step)) {
 			default:
 			case 'ui_in':
@@ -294,7 +295,7 @@ class GBPPlugin {
 		return '';
 	}
 
-	function gbp_array_text ($step, $value, $item = '') {
+	public function gbp_array_text ($step, $value, $item = '') {
 		switch (strtolower($step)) {
 			default:
 			case 'ui_in':
@@ -314,7 +315,7 @@ class GBPPlugin {
 		return '';
 	}
 
-	function &add_tab ($tab, $is_default = NULL) {
+	public function &add_tab ($tab, $is_default = NULL) {
 
 		// Check to see if the tab is active
 		if (($is_default && !gps(gbp_tab)) || (gps(gbp_tab) == $tab->event))
@@ -351,11 +352,11 @@ class GBPPlugin {
 		return $this;
 	}
 
-	function preload () {
+	public function preload () {
 		// Override this function if you require sub tabs.
 	}
 
-	function render () {
+	public function render () {
 
 		// render() gets called because it is specified in txp's register_callback()
 
@@ -376,7 +377,7 @@ class GBPPlugin {
 		$this->end();
 	}
 
-	function render_header () {
+	public function render_header () {
 
 		// Render the pagetop, a txp function
 		pagetop($this->title, $this->message);
@@ -385,7 +386,7 @@ class GBPPlugin {
 		$this->message = '';
 	}
 
-	function render_tabs () {
+	public function render_tabs () {
 		// This table, which contains the tags, will have to be changed if any improvements
 		// happen to the admin interface
 		$out[] = '<div id="'.$this->plugin_name.'_control" class="txp-control-panel">';
@@ -420,11 +421,11 @@ class GBPPlugin {
 		echo join('', $out);
 	}
 
-	function main () {
+	public function main () {
 		// Override this function
 	}
 
-	function render_tab_main () {
+	public function render_tab_main () {
 
 		// Call main() for the active_tab
 		$tab = &$this->tabs[$this->active_tab];
@@ -434,7 +435,7 @@ class GBPPlugin {
 			echo '<p>'.gTxt('restricted_area').'</p>';
 	}
 
-	function render_footer () {
+	public function render_footer () {
 
 		// A simple footer
 		global $plugins_ver;
@@ -448,11 +449,11 @@ class GBPPlugin {
 		echo join('', $out);
 	}
 
-	function end () {
+	public function end () {
 		// Override this function
 	}
 
-	function form_inputs () {
+	public function form_inputs () {
 
 		$out[] = eInput($this->event);
 
@@ -465,7 +466,7 @@ class GBPPlugin {
 		return join('', $out);
 	}
 
-	function url ($vars = array(), $gp = false) {
+	public function url ($vars = array(), $gp = false) {
 		/*
 		Expands $vars into a get style url and redirects to that location. These can be
 		overriden with the current get, post, session variables defined in $this->gp
@@ -489,7 +490,7 @@ class GBPPlugin {
 			: '');
 	}
 
-	function redirect ($url = '', $status = 303) {
+	public function redirect ($url = '', $status = 303) {
 		/*
 		If $vars is an array, use url() to expand as an GET style url and redirect to
 		that location using the HTTP status code definition defined by $status.
@@ -539,7 +540,7 @@ END;
 		}
 	}
 
-	function pref ($key) {
+	public function pref ($key) {
 		global $prefs, $txp_current_plugin;
 
 		$plugin = ($this->plugin_name) ? $this->plugin_name : $txp_current_plugin;
@@ -553,7 +554,8 @@ END;
 	}
 }
 
-class GBPAdminTabView {
+class GBPAdminTabView
+{
 	//	Internal variables
 	var $title;
 	var $event;
@@ -562,7 +564,7 @@ class GBPAdminTabView {
 	var $permissions = '1,2,3,4,5,6';
 
 	//	Constructor
-	function GBPAdminTabView ($title, $event, &$parent, $is_default = NULL) {
+	public function __construct($title, $event, &$parent, $is_default = NULL) {
 
 		$this->title = (function_exists('mb_convert_case'))
 			? mb_convert_case($title, MB_CASE_TITLE, "UTF-8")
@@ -579,7 +581,7 @@ class GBPAdminTabView {
 		add_privs($this->parent->event.'.'.$this->event, ($perms ? $perms : $this->permissions));
 	}
 
-	function php_4_fix () {
+	public function php_4_fix () {
 
 		// Fix references in PHP 4 so sub tabs can access their parent tab
 		if (version_compare(phpversion(), '5.0.0', '<')) {
@@ -588,11 +590,11 @@ class GBPAdminTabView {
 		}
 	}
 
-	function preload () {
+	public function preload () {
 		// Override this function
 	}
 
-	function render_tab () {
+	public function render_tab () {
 
 		// Grab the url to this tab
 		$url = $this->parent->url(array(gbp_tab => $this->event), true);
@@ -603,45 +605,45 @@ class GBPAdminTabView {
 		return join('', $out);
 	}
 
-	function main () {
+	public function main () {
 		// Override this function
 	}
 
-	function pref ($key) {
+	public function pref ($key) {
 		return @$this->parent->pref($key);
 	}
 
-	function redirect ($vars = '') {
+	public function redirect ($vars = '') {
 		$this->parent->redirect($vars);
 	}
 
-	function set_preference ($key, $value, $type = '') {
+	public function set_preference ($key, $value, $type = '') {
 		return $this->parent->set_preference($key, $value, $type);
 	}
 
-	function remove_preference ($key) {
+	public function remove_preference ($key) {
 		return $this->parent->remove_preference($key);
 	}
 
-	function url ($vars, $gp = false) {
+	public function url ($vars, $gp = false) {
 		return $this->parent->url($vars, $gp);
 	}
 
-	function form_inputs () {
+	public function form_inputs () {
 		return $this->parent->form_inputs();
 	}
 }
 
-class GBPPreferenceTabView extends GBPAdminTabView {
-
+class GBPPreferenceTabView extends GBPAdminTabView
+{
 	var $permissions = 'prefs';
 
-	function GBPPreferenceTabView (&$parent, $is_default = NULL) {
+	public function __construct(&$parent, $is_default = NULL) {
 		// Call the parent constructor
-		GBPAdminTabView::GBPAdminTabView(gTxt('tab_preferences'), 'preference', $parent, $is_default);
+		parent::__construct(gTxt('tab_preferences'), 'preference', $parent, $is_default);
 	}
 
-	function preload () {
+	public function preload () {
 		if (ps('step') == 'prefs_save') {
 			foreach ($this->parent->preferences as $key => $pref) {
 				extract($pref);
@@ -653,7 +655,7 @@ class GBPPreferenceTabView extends GBPAdminTabView {
 		}
 	}
 
-	function main () {
+	public function main () {
 		// Make txp_prefs.php happy :)
 		global $event;
 		$event = $this->parent->event;
@@ -693,19 +695,19 @@ class GBPPreferenceTabView extends GBPAdminTabView {
 			'</form>';
 	}
 
-	function popHelp ($helpvar) {
+	public function popHelp ($helpvar) {
 		$script = hu.basename(txpath).'/index.php';
 		return '<a href="'.$script.'?event=plugin'.a.'step=plugin_help'.a.'name='.$this->parent->plugin_name.'#'.$helpvar.'" class="pophelp">?</a>';
 	}
 }
 
-class GBPWizardTabView extends GBPAdminTabView {
-
+class GBPWizardTabView extends GBPAdminTabView
+{
 	var $installation_steps = array();
 	var $wiz_report = array();
 	var $permissions = 'admin.edit';
 
-	function GBPWizardTabView (&$parent, $is_default = NULL, $title = 'Wizards') {
+	public function __construct(&$parent, $is_default = NULL, $title = 'Wizards') {
 		global $textarray;
 
 		#
@@ -720,10 +722,10 @@ class GBPWizardTabView extends GBPAdminTabView {
 		$this->installation_steps = $this->get_steps();
 
 		// Call the parent constructor
-		GBPAdminTabView::GBPAdminTabView($title, 'wizard', $parent, $is_default);
+		parent::__construct($title, 'wizard', $parent, $is_default);
 	}
 
-	function get_steps () {
+	public function get_steps () {
 		#
 		#	Override this method in derived classes to return the appropriate setup/cleanup steps.
 		#
@@ -735,7 +737,7 @@ class GBPWizardTabView extends GBPAdminTabView {
 		return $steps;
 	}
 
-	function get_strings ($language = '') {
+	public function get_strings ($language = '') {
 		#
 		#	Override this function in derived classes to define/change the set of strings to
 		# inject into $textarray to localise the wizard.
@@ -762,7 +764,7 @@ class GBPWizardTabView extends GBPAdminTabView {
 		return $strings;
 	}
 
-	function versions_ok () {
+	public function versions_ok () {
 		$msg = '';
 
 		#
@@ -797,11 +799,11 @@ class GBPWizardTabView extends GBPAdminTabView {
 		return true;
 	}
 
-	function get_required_versions () {
+	public function get_required_versions () {
 		global $prefs;
 
 		#
-		#	Override this function to return an array of tests to be carried out.
+		#	Override this public public public function to return an array of tests to be carried out.
 		#
 		$tests = array('TxP' => array(
 			'current'	=> $prefs['version'],
@@ -810,7 +812,7 @@ class GBPWizardTabView extends GBPAdminTabView {
 		return $tests;
 	}
 
-	function main () {
+	public function main () {
 		$out[] = '<style type="text/css"> .success { color: #009900; } .failure { color: #FF0000; } .skipped { color: #0000FF; } </style>';
 		$out[] = '<div style="border: 1px solid gray; width: 50em; text-align: center; margin: 1em auto; padding: 1em; clear: both;">';
 
@@ -882,11 +884,11 @@ class GBPWizardTabView extends GBPAdminTabView {
 		echo form(join(n, $out), '', $verify);
 	}
 
-	function installed () {
+	public function installed () {
 		return false;
 	}
 
-	function wizard_steps ($step) {
+	public function wizard_steps ($step) {
 		$step_details = '';
 
 		foreach ($this->installation_steps as $key => $detail) {
@@ -913,7 +915,7 @@ class GBPWizardTabView extends GBPAdminTabView {
 		return $step_details.n;
 	}
 
-	function wizard_report () {
+	public function wizard_report () {
 		// Render the wizard report as an ordered list. There maybe
 		// 'sub' reports which we need to also render as ordered lists
 		$out = array();
@@ -937,7 +939,7 @@ class GBPWizardTabView extends GBPAdminTabView {
 		return tag(join(n , $out) , 'ol');
 	}
 
-	function add_report_item ($string , $ok = NULL, $sub = false) {
+	public function add_report_item ($string , $ok = NULL, $sub = false) {
 		if (isset($ok)) {
 			switch ($ok) {
 				case '1' :
@@ -967,31 +969,31 @@ class GBPWizardTabView extends GBPAdminTabView {
 			$this->wiz_report[] = array($line);
 	}
 
-	function setup_basic () {
+	public function setup_basic () {
 		$this->add_report_item(gTxt('gbp_adlib_wiz-step_basic'), true);
 	}
 
-	function cleanup_basic () {
+	public function cleanup_basic () {
 		$this->add_report_item(gTxt('gbp_adlib_wiz-step_basic'), false);
 	}
 
-	function setup_optional () {
+	public function setup_optional () {
 		$this->add_report_item(gTxt('gbp_adlib_wiz-step_optional'), true);
 	}
 
-	function cleanup_optional () {
+	public function cleanup_optional () {
 		$this->add_report_item(gTxt('gbp_adlib_wiz-step_optional'), false);
 	}
 
-	function setup_has_options () {
+	public function setup_has_options () {
 		$this->add_report_item(gTxt('gbp_adlib_wiz-step_complex'), true);
 	}
 
-	function cleanup_has_options () {
+	public function cleanup_has_options () {
 		$this->add_report_item(gTxt('gbp_adlib_wiz-step_complex'), false);
 	}
 
-	function option_has_options ($step) {
+	public function option_has_options ($step) {
 		return graf(gTxt('gbp_adlib_wiz-step_complex_txt' , array('{step}' => $step))).yesnoRadio('wizard_has_options_test', 1);
 	}
 }

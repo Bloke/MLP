@@ -1415,7 +1415,7 @@ class MLPPlugin extends GBPPlugin
 	var $insert_in_debug_mode = false;
 	var $permissions = '1,2,3,6';
 
-	function MLPPlugin( $title_alias , $event , $parent_tab = 'extensions' )
+	public function __construct( $title_alias , $event , $parent_tab = 'extensions' )
 		{
 		global $textarray , $production_status , $prefs;
 		global $l10n_default_strings , $l10n_default_strings_lang , $l10n_default_strings_perm;
@@ -1457,7 +1457,7 @@ class MLPPlugin extends GBPPlugin
 			}
 
 		# Be sure to call the parent constructor *after* the strings it needs are added and loaded!
-		GBPPlugin::GBPPlugin( gTxt($title_alias) , $event , $parent_tab );
+		parent::__construct( gTxt($title_alias) , $event , $parent_tab );
 		}
 
 	function _insert_css()
@@ -1764,7 +1764,7 @@ class MLPSnipView extends GBPAdminTabView
 	var $active_tab = 0;
 	var $use_tabs = false;
 
-	function MLPSnipView( $title, $event, &$parent, $is_default = NULL )
+	public function __construct( $title, $event, &$parent, $is_default = NULL )
 		{
 		$this->tabs[] = new MLPStringView( gTxt('search') , 'search' , $this );
 		$this->tabs[] = new MLPStringView( gTxt('l10n-specials') , 'special' , $this );
@@ -1774,7 +1774,7 @@ class MLPSnipView extends GBPAdminTabView
 			$this->tabs[] = new MLPStringView( gTxt('forms') , 'form' , $this );
 		$this->tabs[] = new MLPSnipIOView( gTxt( 'l10n-inout' ) , 'inout' , $this );
 
-		GBPAdminTabView::GBPAdminTabView( $title , $event , $parent , $is_default );
+		parent::__construct( $title , $event , $parent , $is_default );
 		}
 	function get_canvas_style()
 		{
@@ -1842,11 +1842,11 @@ class MLPSnipView extends GBPAdminTabView
 class MLPSubTabView extends GBPAdminTabView
 	{
 	var $sub_tab = '';
-	function MLPSubTabView( $title, $event, &$parent, $is_default = NULL , $subtab = '' )
+	public function __construct( $title, $event, &$parent, $is_default = NULL , $subtab = '' )
 		{
 		if( !empty($subtab) )
 			$this->sub_tab = $subtab;
-		GBPAdminTabView::GBPAdminTabView( $title , $event , $parent , $is_default );
+		parent::__construct( $title , $event , $parent , $is_default );
 		}
 
 	function render_tab()
@@ -1889,15 +1889,15 @@ class MLPStringView extends GBPAdminTabView
 		return $this->parent->url( $vars , $gp );
 		}
 
-	function MLPStringView($title, $event, &$parent, $is_default = NULL)
+	public function __construct($title, $event, &$parent, $is_default = NULL)
 		{
 		if( $event !== 'plugin' )
 			{
 			$this->sub_tab = $event;
-			GBPAdminTabView::GBPAdminTabView( $title, 'snippets', $parent, $is_default );
+			parent::__construct( $title, 'snippets', $parent, $is_default );
 			}
 		else
-			GBPAdminTabView::GBPAdminTabView( $title, $event, $parent, $is_default );
+			parent::__construct( $title, $event, $parent, $is_default );
 		}
 
 
@@ -3099,9 +3099,9 @@ class MLPStringView extends GBPAdminTabView
 
 class MLPSnipIOView extends MLPSubTabView
 	{
-	function MLPSnipIOView($title, $event, &$parent, $is_default = NULL)
+	public function __construct($title, $event, &$parent, $is_default = NULL)
 		{
-		MLPSubTabView::MLPSubTabView( $title , 'snippets' , $parent , $is_default , $event );
+		parent::__construct( $title , 'snippets' , $parent , $is_default , $event );
 		}
 
 	function preload()
@@ -3503,7 +3503,7 @@ class MLPArticleView extends GBPAdminTabView
 	{
 	var $clone_by_id = '';
 	var	$statuses = array();
-	function MLPArticleView( $title, $event, &$parent, $is_default = NULL )
+	public function __construct( $title, $event, &$parent, $is_default = NULL )
 		{
 		$this->statuses = array(
 			1 => gTxt('draft'),
@@ -3512,7 +3512,7 @@ class MLPArticleView extends GBPAdminTabView
 			4 => gTxt('live'),
 			5 => gTxt('sticky'),
 			);
-		GBPAdminTabView::GBPAdminTabView( $title , $event , $parent , $is_default );
+		parent::__construct( $title , $event , $parent , $is_default );
 		}
 
 	function preload()
