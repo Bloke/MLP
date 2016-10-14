@@ -389,7 +389,7 @@ function safe_escape_like($in = '')
 
 function safe_query($q = '', $debug = false, $unbuf = false)
 {
-    global $DB, $txpcfg, $trace, $production_status;
+    global $DB, $trace, $production_status;
     $method = ($unbuf) ? MYSQLI_USE_RESULT : MYSQLI_STORE_RESULT;
 
     if (!$q) {
@@ -407,7 +407,11 @@ function safe_query($q = '', $debug = false, $unbuf = false)
     $result = mysqli_query($DB->link, $q, $method);
 
     if ($production_status !== 'live') {
-        $trace->stop();
+        if (is_bool($result)) {
+            $trace->stop();
+        } else {
+            $trace->stop("[Rows: ".intval(@mysqli_num_rows($result))."]");
+        }
     }
 
     if ($result === false) {
