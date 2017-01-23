@@ -3616,6 +3616,7 @@ class MLPArticleView extends GBPAdminTabView
 			$source['AuthorID'] = $new_author;
 		$source[L10N_COL_LANG] = $target_lang;
 		$source['Status'] = 1;
+		$source['Posted'] = 'now()';
 		$source['LastMod'] = 'now()';
 		$source['feed_time'] = 'now()';
 		$source['uid'] = md5(uniqid(rand(),true));
@@ -3647,10 +3648,10 @@ class MLPArticleView extends GBPAdminTabView
 		#	Add into the rendition table for this lang ensuring this has the ID of the
 		# just added master entry!
 		#
-		$insert[] = '`ID`='.doSlash( $rendition_id );
-		$insert_sql = join( ', ' , $insert );
-		$table_name = _l10n_make_textpattern_name( array( 'long'=>$target_lang ) );
-		safe_insert( $table_name , $insert_sql );
+//		$insert[] = '`ID`='.doSlash( $rendition_id );
+//		$insert_sql = join( ', ' , $insert );
+//		$table_name = _l10n_make_textpattern_name( array( 'long'=>$target_lang ) );
+//		safe_insert( $table_name , $insert_sql );
 
 		return $rendition_id;
 		}
@@ -3794,12 +3795,12 @@ class MLPArticleView extends GBPAdminTabView
 		#
 		#	Delete from the rendition tables...
 		#
-		foreach( $renditions as $rendition )
-			{
-			$lang = $rendition[L10N_COL_LANG];
-			$rendition_table = _l10n_make_textpattern_name( array( 'long'=>$lang ) );
-			safe_delete( $rendition_table , L10N_COL_GROUP."=$article" );
-			}
+//		foreach( $renditions as $rendition )
+//			{
+//			$lang = $rendition[L10N_COL_LANG];
+//			$rendition_table = _l10n_make_textpattern_name( array( 'long'=>$lang ) );
+//			safe_delete( $rendition_table , L10N_COL_GROUP."=$article" );
+//			}
 
 		#
 		#	Delete from the articles table...
@@ -3838,8 +3839,9 @@ class MLPArticleView extends GBPAdminTabView
 		#
 		#	Delete from the correct language rendition table...
 		#
-		$rendition_table = _l10n_make_textpattern_name( array( 'long'=>$lang ) );
-		$rendition_deleted = safe_delete( $rendition_table , "`ID`=$rendition" );
+//		$rendition_table = _l10n_make_textpattern_name( array( 'long'=>$lang ) );
+//		$rendition_deleted = safe_delete( $rendition_table , "`ID`=$rendition" );
+		$rendition_deleted = true;
 
 		#
 		#	Delete from the article table...
