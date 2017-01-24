@@ -1276,7 +1276,7 @@ class MLPStrings
 		$out[] = '#';
 		$out[] = '# =====================================================================';
 		$out[] = '# ';
-		$out[] = "#@version 4.5.2;".$time;
+		$out[] = "#@version 4.6.2;".$time;
 		$out[] = '# ';
 		foreach( $strings as $string )
 			{
@@ -1523,9 +1523,8 @@ class MLPPlugin extends GBPPlugin
 				#
 				#	Add language tables as needed and populate them as far as possible...
 				#
-				$indexes = "(PRIMARY KEY  (`ID`), KEY `categories_idx` (`Category1`(10),`Category2`(10)), KEY `Posted` (`Posted`), FULLTEXT KEY `searching` (`Title`,`Body`))";
-				$sql = "create table `$full_name` $indexes ENGINE=MyISAM select * from `".PFX."textpattern` where ".L10N_COL_LANG."='$lang'";
-				$ok = safe_query( $sql );
+                                $sql = "CREATE VIEW `$full_name` AS SELECT * FROM `".PFX."textpattern` WHERE ".L10N_COL_LANG."='$lang'";
+                                $ok = safe_query( $sql );
 
 				#
 				#	Add fields for this language...
@@ -1553,7 +1552,7 @@ class MLPPlugin extends GBPPlugin
 				#
 				#	Drop language tables that are no longer needed...
 				#
-				$sql = 'drop table `'.$full_name.'`';
+                                $sql = 'DROP VIEW `'.$full_name.'`';
 				$ok = safe_query( $sql );
 
 				#
@@ -5219,9 +5218,8 @@ class MLPWizView extends GBPWizardTabView
 			{
 			$code       = MLPLanguageHandler::compact_code( $lang );
 			$table_name = _l10n_make_textpattern_name( $code );
-			$indexes = "(PRIMARY KEY  (`ID`), KEY `categories_idx` (`Category1`(10),`Category2`(10)), KEY `Posted` (`Posted`), FULLTEXT KEY `searching` (`Title`,`Body`))";
 
-			$sql = "create table `".PFX."$table_name` $indexes ENGINE=MyISAM select * from `".PFX."textpattern` where `".L10N_COL_LANG."`='$lang'";
+                        $sql = "CREATE VIEW `".PFX."$table_name` AS SELECT * FROM `".PFX."textpattern` WHERE ".L10N_COL_LANG."='$lang'";
 			$ok = safe_query( $sql );
 			if (mysqli_error($DB->link) == "Table '".PFX."$table_name' already exists")
 				$ok = 'skipped';
@@ -5379,7 +5377,7 @@ class MLPWizView extends GBPWizardTabView
 			{
 			$code  = MLPLanguageHandler::compact_code( $lang );
 			$table_name = _l10n_make_textpattern_name( $code );
-			$sql = 'drop table `'.PFX.$table_name.'`';
+                        $sql = 'DROP VIEW `'.PFX.$table_name.'`';
 			$ok = safe_query( $sql );
 			$this->add_report_item( gTxt('l10n-op_table',array('{op}'=>'Drop' ,'{table}'=>MLPLanguageHandler::get_native_name_of_lang( $lang ).' ['.$table_name.']')) , $ok , true );
 			}
