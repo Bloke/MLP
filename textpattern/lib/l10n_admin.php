@@ -1200,25 +1200,39 @@ function _l10n_check_lang_table( $lang )
 
 	$code = $result;
 	$table_name = _l10n_make_textpattern_name( $code );
-	if( safe_query( "SHOW COLUMNS FROM `$table_name`" ) )
-		{
-		return true;
+	$type = NULL;
+	if ( $r = safe_query( 'SHOW FULL TABLES') ) {
+		$type = 'NONE';
+		if ( mysqli_num_rows( $r ) > 0 ) {
+			while ( $a = mysqli_fetch_row( $r ) ) {
+				if ( $a[0] === PFX.$table_name ) {
+					$type = strtoupper($a[1]);
+				}
+			}
+	
+			mysqli_free_result( $r );
 		}
-	return array($code, $table_name);
+	}
+	
+	return array($code, $table_name, $type);
 	}
 function _l10n_generate_lang_table( $lang )
 	{
 	$result = _l10n_check_lang_table( $lang );
 	if( !is_array($result) ) return $result;
 
-	list($code, $table_name) = $result;
-	$where = ' WHERE `'.L10N_COL_LANG."`='$lang'";
-
-	safe_query( 'LOCK TABLES `'.PFX.$table_name.'` WRITE' );
-	safe_query( 'CREATE TABLE `'.PFX.$table_name.'` LIKE `'.PFX.'textpattern`' );
-	safe_query( 'INSERT INTO `'.PFX.$table_name.'` SELECT * FROM `'.PFX.'textpattern`'.$where );
-	safe_query( 'OPTIMIZE TABLE `'.PFX.$table_name.'`' );
-	safe_query( 'UNLOCK TABLES' );
+	list($code, $table_name, $type) = $result;
+	switch( $type ) {
+		case 'BASE TABLE':
+			safe_query( 'DROP TABLE `'.PFX.$table_name.'`' );
+			
+		case 'NONE':
+			$where = ' WHERE `'.L10N_COL_LANG."`='$lang'";
+			safe_query( 'CREATE VIEW `'.PFX.$table_name.'` AS SELECT * FROM `'.PFX.'textpattern`'.$where );
+			
+		case 'VIEW':
+		default:
+	}
 	}
 
 function _l10n_check_localise_table( $lang )
