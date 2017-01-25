@@ -234,37 +234,9 @@ function _l10n_check_index()
 	}
 function _l10n_post_save( $event , $step )
 {
-	$fields = array();
-	if ($event === 'section')
-	{
-		$fields[] = 'Section';
-	}
-	else if ($event === 'category' && strpos($step, '_save') !== false)
-	{
-		$fields = array('Category1', 'Category2');
-	}
-
-	if (empty($fields))
-	{
-		return false;
-	}
-
-	$old_name = doSlash( ps('old_name') );
-	$name     = doSlash( sanitizeForUrl( ps('name') ) );
-
-	if( $name !== $old_name )
-	{
-		$langs = MLPLanguageHandler::get_site_langs();
-		foreach( $langs as $lang )
-		{
-			$table = _l10n_make_textpattern_name(array('long'=>$lang));
-			foreach ($fields as $field)
-			{
-				$clause = $field . " = '$old_name'" ;
-				safe_update( $table , $field . " = '$name'", $clause );
-			}
-		}
-	}
+	#
+	#	Nothing to do, when tables are replaced by views 
+	#
 }
 
 function _l10n_list_filter( $event, $step )
@@ -875,38 +847,15 @@ function _l10n_article_buffer_processor( $buffer )
 
 function _l10n_replace_rendition( $lang , $replace=false , $id='' )
 	{
-	$op = 'INSERT';
-	if( $replace )
-		$op = 'REPLACE';
-
-	if( empty($id) )
-		{
-		if(!empty($GLOBALS['ID']))
-			$id = intval($GLOBALS['ID']);
-		else
-			$id = gps('ID');
-		}
-
-	if( !MLPLanguageHandler::is_valid_code($lang) )
-		{
-		echo br , "Invalid language code '$lang' calculated in _l10n_add_rendition()";
-		return;
-		}
-	$table_name = safe_pfx( _l10n_make_textpattern_name($lang) );
-	$safe_txp = safe_pfx( 'textpattern' );
-
-	$sql = $op." INTO $table_name SELECT * FROM $safe_txp WHERE $safe_txp.ID='$id' LIMIT 1";
-	safe_query( $sql );
+		#
+		#	Nothing to do, when tables are replaced by views 
+		#
 	}
 function _l10n_remove_rendition( $lang , $id )
 	{
-	if( !MLPLanguageHandler::is_valid_code($lang) )
-		{
-		echo br , "Invalid language code '$lang' calculated in _l10n_add_rendition()";
-		return;
-		}
-	$table_name = safe_pfx( _l10n_make_textpattern_name($lang) );
-	safe_delete( $table_name , "`ID`='$id'" );
+		#
+		#	Nothing to do, when tables are replaced by views 
+		#
 	}
 function _l10n_add_rendition_to_article_cb( $event , $step )
 	{
@@ -1129,28 +1078,9 @@ function _l10n_pre_multi_edit_cb( $event , $step )
 
 function _l10n_observe_table_changes( $event , $step )
 {
-	static $l10n_hashes = array();
-
-	if (isset($l10n_hashes['textpattern'])) {
-		$rs = $l10n_hashes['textpattern'];
-	} else {
-		$rs = safe_show('COLUMNS', 'textpattern');
-		$l10n_hashes['textpattern'] = $rs;
-	}
-
-	$txp_table_hash = md5(serialize($l10n_hashes['textpattern']));
-	$previous_hashes = unserialize(get_pref('l10n_hashes'));
-
-	if ($previous_hashes['textpattern'] !== $txp_table_hash) {
-		_l10n_sync_table_definitions( $l10n_hashes );
-//	_l10n_update_dirty_flag( 'DIRTY' );
-	}
-
-	// Regenerate the hash table and stash it
-	$hash_table = array();
-	$hash_table['textpattern'] = $txp_table_hash;
-
-	set_pref('l10n_hashes', serialize($hash_table), 'l10n', PREF_HIDDEN);
+	#
+	#	Nothing to do, when tables are replaced by views 
+	#
 }
 
 function _l10n_check_lang_code( $lang )
@@ -1307,88 +1237,9 @@ function _l10n_generate_localise_table_fields( $lang )
 */
 function _l10n_sync_table_definitions( $source = array() )
 {
-	if (!is_array($source)) {
-		return false;
-	}
-
-	foreach ($source as $table => $definition)
-	{
-//dmp($definition);
-		switch ($table)
-		{
-			case 'textpattern':
-				$langs = MLPLanguageHandler::get_site_langs();
-
-				foreach ($langs as $lang)
-				{
-					$sql = array();
-					$safe_lang = _l10n_check_lang_code( $lang );
-					if( !is_string($safe_lang) ) continue;
-
-					$table = _l10n_make_textpattern_name(array('long' => $lang));
-					$rs = safe_show('COLUMNS', $table);
-
-					foreach ($definition as $def)
-					{
-						$field = $def['Field'];
-
-						$type = $def['Type'];
-						$null = $def['Null'];
-						$default = $def['Default'];
-						$extra = $def['Extra'];
-
-						$found = false;
-						foreach ($rs as $idx => $lang_field) {
-							if ( $lang_field['Field'] === $field) {
-								$found = $idx;
-								break;
-							}
-						}
-
-						// ID fields can't be altered here due to auto_increment differences
-						// This can't be done earlier as we don't know the position in the destination table until now
-						if ($field === 'ID') {
-							unset($rs[$found]);
-							continue;
-						}
-
-						if ($found !== false) {
-							// Field exists in destination table so update its definition if anything's changed
-							$dest_type = $rs[$found]['Type'];
-							$dest_null = $rs[$found]['Null'];
-							$dest_default = $rs[$found]['Default'];
-							$dest_extra = $rs[$found]['Extra'];
-
-							if ( $type !== $dest_type
-									|| $null !== $dest_null
-									|| $default !== $dest_default
-									|| $extra !== $dest_extra )
-								{
-									$sql[] = 'MODIFY ' .$field. ' ' .$type . ($null === 'NO' ? ' NOT NULL' : ' NULL') . ($default ? ' DEFAULT "'.$default.'"' : '') . ' ' .$extra;
-								}
-
-							// Removing each found item from the destination table serves two purposes:
-							// 1) it speeds the loop up as things move forward
-							// 2) it means that any fields left over by the time the loop ends are fields that need removing
-							unset($rs[$found]);
-
-						} else {
-							// New field (or possibly a renamed field, but if that happens there are more urgent things to worry about!)
-							$sql[] = 'ADD ' .$field. ' ' .$type . ($null === 'NO' ? ' NOT NULL' : ' NULL') . ($default ? ' DEFAULT "'.$default.'"' : '') . ' ' .$extra;
-						}
-					}
-
-					// Extraneous fields: remove them
-					foreach ($rs as $def) {
-						$sql[] = 'DROP ' . $def['Field'];
-					}
-					foreach ($sql as $statement) {
-						safe_alter($table, $statement);
-					}
-				}
-			break;
-		}
-	}
+	#
+	#	Nothing to do, when tables are replaced by views 
+	#
 }
 
 function _l10n_pre_discuss_multi_edit( $event , $step )
