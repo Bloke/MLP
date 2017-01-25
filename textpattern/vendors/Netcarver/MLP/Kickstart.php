@@ -14,7 +14,7 @@ namespace Netcarver\MLP;
 class Kickstart
 {
     // IMPORTANT: Bump this for each release so the dirty flag is set
-    protected $l10n_release_version = '4.6.0.20160216';
+    protected $l10n_release_version = '4.6.2.20170125';
     protected $l10n_install_version = '';
 
     /**
