@@ -3643,15 +3643,6 @@ class MLPArticleView extends GBPAdminTabView
 		#
 		MLPArticles::add_rendition( $article_id , $rendition_id , $target_lang );
 
-		#
-		#	Add into the rendition table for this lang ensuring this has the ID of the
-		# just added master entry!
-		#
-//		$insert[] = '`ID`='.doSlash( $rendition_id );
-//		$insert_sql = join( ', ' , $insert );
-//		$table_name = _l10n_make_textpattern_name( array( 'long'=>$target_lang ) );
-//		safe_insert( $table_name , $insert_sql );
-
 		return $rendition_id;
 		}
 
@@ -3792,16 +3783,6 @@ class MLPArticleView extends GBPAdminTabView
 		$master_deleted = safe_delete( 'textpattern' , L10N_COL_GROUP."=$article" );
 
 		#
-		#	Delete from the rendition tables...
-		#
-//		foreach( $renditions as $rendition )
-//			{
-//			$lang = $rendition[L10N_COL_LANG];
-//			$rendition_table = _l10n_make_textpattern_name( array( 'long'=>$lang ) );
-//			safe_delete( $rendition_table , L10N_COL_GROUP."=$article" );
-//			}
-
-		#
 		#	Delete from the articles table...
 		#
 		MLPArticles::destroy_article( $article );
@@ -3838,8 +3819,7 @@ class MLPArticleView extends GBPAdminTabView
 		#
 		#	Delete from the correct language rendition table...
 		#
-//		$rendition_table = _l10n_make_textpattern_name( array( 'long'=>$lang ) );
-//		$rendition_deleted = safe_delete( $rendition_table , "`ID`=$rendition" );
+		# (not required, as tables changed by views)
 		$rendition_deleted = true;
 
 		#
