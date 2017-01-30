@@ -27,7 +27,7 @@ class Kickstart
         if (txpinterface === 'admin') {
             $this->l10n_install_version = get_pref('l10n_version', '', 1);
 
-            if (!$dbversion || ($dbversion != $thisversion) || ($l10n_release_version != $installed_l10n_version) || $txp_using_svn) {
+            if (!$dbversion || ($dbversion != $thisversion) || ($this->l10n_release_version != $this->l10n_install_version) || $txp_using_svn) {
                 // Dirty: perform upgrade.
                 // Ensure new indexes are present in case of upgrade.
                 _l10n_check_index();
