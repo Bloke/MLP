@@ -542,7 +542,7 @@ if (@txpinterface === 'public')
 		#	The REQUEST_URI has to be maintained to ensure comments work and compatibility with
 		# plugins...
 		#
-		if ($prefs['l10n_l10n-url_default_lang_marker'] === '1' || isset($_SESSION['l10n_request_uri']))
+		if ((isset($prefs['l10n_l10n-url_default_lang_marker']) && $prefs['l10n_l10n-url_default_lang_marker'] === '1') || isset($_SESSION['l10n_request_uri']))
 		{
 			if (isset($_SESSION['l10n_request_uri'])) {
 				$pretext['request_uri'] = $_SERVER['REQUEST_URI'] = $_SESSION['l10n_request_uri'];
@@ -721,7 +721,7 @@ if (@txpinterface === 'public')
 			$default_lang_long = $site_langs[0];
 			$default_lang_short = substr( $default_lang_long , 0 , 2 );
 
-			if ( $prefs['l10n_l10n-url_default_lang_marker'] === '1' || ($callback_language_marker !== $default_lang_short) )
+			if ( (isset($prefs['l10n_l10n-url_default_lang_marker']) && $prefs['l10n_l10n-url_default_lang_marker'] === '1') || ($callback_language_marker !== $default_lang_short) )
 				{
 				$result = $l10n_replace_strings['start_rep'].$matches[1].'/'.$callback_language_marker.$extra.$matches[2].$l10n_replace_strings['stop_rep'];
 				}
