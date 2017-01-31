@@ -306,7 +306,7 @@ function _l10n_list_filter( $event, $step )
 				}
 			}
 			$languages = join( ',' , $selected );
-			_l10n_create_temp_textpattern( $languages );
+//			_l10n_create_temp_textpattern( $languages );
 			break;
 		default:
 			break;
@@ -1777,7 +1777,9 @@ function _l10n_image_extend ($evt, $stp, $data, $rs) {
 				if( $field === 'alt' )
 					{
 					$r .= '<p class="edit-image-alt-text"><span class="edit-label"><label for="image_alt_text_'.$lang.'">'.gTxt('alt_text').' ['.$full_name.']</label></span>';
-					$r .= '<span class="edit-value"><input type="text" name="'.$field_name.'" '.$dir.' value="'.$rs[$field_name].'" size="'.INPUT_REGULAR.'" id="image_alt_text_'.$lang.'" /></span></p>'.n;
+//					$r .= '<span class="edit-value"><input type="text" name="'.$field_name.'" '.$dir.' value="'.$rs[$field_name].'" size="'.INPUT_REGULAR.'" id="image_alt_text_'.$lang.'" /></span></p>'.n;
+					$r .= '<textarea id="image_caption_'.$lang.'" name="'.$field_name .'" cols="'.INPUT_LARGE.'" rows="'.INPUT_XSMALL.'"'.$dir.'>';
+					$r .= $rs[$field_name].'</textarea></p>'.n;
 					}
 				else
 					{
