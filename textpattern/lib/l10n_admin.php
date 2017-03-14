@@ -1422,6 +1422,20 @@ function _l10n_section_paint( $page )
 	$default = MLPLanguageHandler::get_site_default_lang();
 
 	#
+	#	Insert the default title field's language's direction...
+	#
+	$dir = MLPLanguageHandler::get_lang_direction_markup( $default ) . ' ';
+	$f = 'id="section_title"';
+	$page = str_replace( $f , $f.$dir , $page );
+
+	#
+	#	Insert the default title field's language name...
+	#
+	$f = '">'.gTxt('section_longtitle');
+	$r = '['.MLPLanguageHandler::get_native_name_of_lang( $default ) . ']';
+	$page = str_replace( $f , $f.n.$r , $page );
+	
+	#
 	#	Insert the remaining language title fields...
 	#
 	global $l10n_mappings, $prefs;
@@ -1435,7 +1449,8 @@ function _l10n_section_paint( $page )
 
 		$name  = txpspecialchars($row['name']);
 		$title = txpspecialchars($row['title']);
-		$f = 'id="section_title" /></span></p>';
+		preg_match_all('/<div class="txp-form-field edit-section-longtitle">([^<]*<[^>]*>){8}/', $page, $m);
+		$f = $m[0][0];
 
 		foreach( $fields as $field => $attributes )
 			{
@@ -1444,34 +1459,24 @@ function _l10n_section_paint( $page )
 				{
 				$full_name = MLPLanguageHandler::get_native_name_of_lang( $lang );
 				$dir = MLPLanguageHandler::get_lang_direction_markup( $lang );
+				
 				if( $lang !== $default )
 					{
 					$field_name = _l10n_make_field_name( $field , $lang );
 					$field_value = $row[$field_name];
-					$r .= '<p class="edit-section-title"><span class="edit-label"><label for="section_title_'.$lang.'">['. $full_name .']</label></span>';
-					$r .= '<span class="edit-value"><input id="section_title_'.$lang.'" type="text" size="'.INPUT_REGULAR.'" name="'. $field_name .'" value="'. $row[$field_name] .'"'.$dir.' /></span></p>';
+					$r .= '<div class="txp-form-field edit-section-longtitle">';
+					$r .= '<div class="txp-form-field-label"><label for="section_title_'.$lang.'">'.gTxt('section_longtitle').' ['. $full_name .']</label></div>';
+					$r .= '<div class="txp-form-field-value"><input id="section_title_'.$lang.'" '.$dir.' name="'. $field_name .'" type="text" size="'.INPUT_REGULAR.'" value="'. $row[$field_name] .'" /></div>';
+					$r .= '</div>';
 					}
 				}
 				$page = str_replace( $f , $f.n.$r , $page );
 			}
 		}
 
-	#
-	#	Insert the default title field's language's direction...
-	#
-	$dir = MLPLanguageHandler::get_lang_direction_markup( $default ) . ' ';
-	$f = 'id="section_title"';
-	$page = str_replace( $f , $f.$dir , $page );
-
-	#
-	#	Insert the default title field's language name...
-	#
-	$f = '">'.gTxt('section_longtitle');
-	$r = '['.MLPLanguageHandler::get_native_name_of_lang( $default ) . ']';
-	$page = str_replace( $f , $f.n.$r , $page );
-
 	return $page;
 	}
+
 function _l10n_section_save( $event , $step )
 	{
 	$id_name = 'name';
