@@ -1484,47 +1484,6 @@ function _l10n_file_paint( $page )
 	$default = MLPLanguageHandler::get_site_default_lang();
 
 	#
-	#	Insert the remaining language fields...
-	#
-	global $l10n_mappings;
-	$langs = MLPLanguageHandler::get_site_langs();
- 	$fields = $l10n_mappings['txp_file'];
-	$id = gps( 'id' );
-	assert_int($id);
-	$row = safe_row( '*' , 'txp_file' , "`id`='$id'" );
-	$dir = MLPLanguageHandler::get_lang_direction_markup( $default ) . ' ';
-	foreach( $fields as $field => $attributes )
-		{
-		$r = '';
-
-		foreach( $langs as $lang )
-			{
-			$field_name = _l10n_make_field_name( $field , $lang );
-
-			if( $lang !== $default )
-				{
-				$full_name = MLPLanguageHandler::get_native_name_of_lang( $lang );
-				$dir = MLPLanguageHandler::get_lang_direction_markup( $lang );
-
-				if( $field === 'title' )
-					{
-					$r .= '<p class="edit-file-title"><span class="edit-label"><label for="file_title_'.$lang.'">['.$full_name.']</label></span>';
-					$r .= '<span class="edit-value"><input type="text" id="file_title_'.$lang.'" name="'.$field_name.'" '.$dir.' value="'.$row[$field_name].'" size="'.INPUT_REGULAR.'" /></span></p>'.n;
-					$f = '<p class="edit-file-category">';
-					}
-				else
-					{
-					$r .= '<p class="edit-file-description"><span class="edit-label"><label for="file_description_'.$lang.'">['.$full_name.']</label></span>';
-					$r .= '<textarea id="file_description_'.$lang.'" name="'.$field_name .'" cols="'.INPUT_LARGE.'" rows="'.INPUT_XSMALL.'"'.$dir.'>';
-					$r .= $row[$field_name].'</textarea></p>'.n;
-					$f = '<fieldset class="file-created">';
-					}
-				}
-			}
-			$page = str_replace( $f , $r.n.$f , $page );
-		}
-
-	#
 	#	Insert the default description field's language name...
 	#
 	$f = '<label for="file_description">'.gTxt('description');
@@ -1537,6 +1496,58 @@ function _l10n_file_paint( $page )
 	$f = '<label for="file_title">'.gTxt('title');
 	$r = ' ['.MLPLanguageHandler::get_native_name_of_lang( $default ) . ']';
 	$page = str_replace( $f , $f.sp.$r , $page );
+	
+	#
+	#	Insert the remaining language fields...
+	#
+	global $l10n_mappings;
+	$langs = MLPLanguageHandler::get_site_langs();
+ 	$fields = $l10n_mappings['txp_file'];
+	$id = gps( 'id' );
+	assert_int($id);
+	$row = safe_row( '*' , 'txp_file' , "`id`='$id'" );
+	$dir = MLPLanguageHandler::get_lang_direction_markup( $default ) . ' ';
+	foreach( $fields as $field => $attributes )
+		{
+		$r = '';
+		if( $field === 'title' )
+			{
+				preg_match_all('/<div class="txp-form-field edit-file-title">([^<]*<[^>]*>){8}/', $page, $m);
+				$f = $m[0][0];
+			}
+		else
+			{
+				preg_match_all('/<div class="txp-form-field txp-form-field-textarea edit-file-description">([^<]*<[^>]*>){9}/', $page, $m);
+				$f = $m[0][0];
+			}
+
+		foreach( $langs as $lang )
+			{
+			$field_name = _l10n_make_field_name( $field , $lang );
+
+			if( $lang !== $default )
+				{
+				$full_name = MLPLanguageHandler::get_native_name_of_lang( $lang );
+				$dir = MLPLanguageHandler::get_lang_direction_markup( $lang );
+
+				if( $field === 'title' )
+					{
+					$r .= '<div class="txp-form-field edit-file-title">';
+					$r .= '<div class="txp-form-field-label"><label for="file_title_'.$lang.'">'.gTxt('title').' ['.$full_name.']</label></div>';
+					$r .= '<div class="txp-form-field-value"><input type="text" id="file_title_'.$lang.'" name="'.$field_name.'" '.$dir.' value="'.$row[$field_name].'" size="'.INPUT_REGULAR.'" /></div>';
+					$r .= '</div>';
+					}
+				else
+					{
+					$r .= '<div class="txp-form-field txp-form-field-textarea edit-file-description">';
+					$r .= '<div class="txp-form-field-label"><label for="file_description_'.$lang.'">'.gTxt('description').' ['.$full_name.']</label></div>';
+					$r .= '<div class="txp-form-field-value"><textarea id="file_description_'.$lang.'" '.$dir.' name="'.$field_name .'" cols="'.INPUT_LARGE.'" rows="'.INPUT_XSMALL.'">'.$row[$field_name].'</textarea></div>';
+					$r .= '</div>';
+					}
+				}
+			}
+			$page = str_replace( $f , $f.n.$r , $page );
+		}
 
 	return $page;
 	}
