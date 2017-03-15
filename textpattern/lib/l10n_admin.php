@@ -1443,10 +1443,6 @@ function _l10n_section_paint( $page )
 	$row = safe_row( '*' , 'txp_section' , "`name`='".doSlash($editing)."'" );
 	if( $row )
 		{
-		$ver = $prefs['version'];
-
-		$name  = txpspecialchars($row['name']);
-		$title = txpspecialchars($row['title']);
 		preg_match_all('/<div class="txp-form-field edit-section-longtitle">([^<]*<[^>]*>){8}/', $page, $m);
 		$f = $m[0][0];
 
@@ -1461,7 +1457,6 @@ function _l10n_section_paint( $page )
 				if( $lang !== $default )
 					{
 					$field_name = _l10n_make_field_name( $field , $lang );
-					$field_value = $row[$field_name];
 					$r .= '<div class="txp-form-field edit-section-longtitle">';
 					$r .= '<div class="txp-form-field-label"><label for="section_title_'.$lang.'">'.gTxt('section_longtitle').' ['. $full_name .']</label></div>';
 					$r .= '<div class="txp-form-field-value"><input id="section_title_'.$lang.'" '.$dir.' name="'. $field_name .'" type="text" size="'.INPUT_REGULAR.'" value="'. $row[$field_name] .'" /></div>';
