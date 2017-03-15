@@ -92,7 +92,6 @@ if( $l10n_view->installed() )
 		}
 
 	register_callback('_l10n_image_extend',    'image_ui',    'extend_detail_form');
-	register_callback('_l10n_link_extend',     'link_ui',     'extend_detail_form');
 
 	if ($app_mode !== 'async') {
 		ob_start('_l10n_process_admin_page');
@@ -1553,38 +1552,6 @@ function _l10n_file_save( $event , $step )
 	safe_update( $table , $set , $where );
 	}
 
-function _l10n_link_extend ($evt, $stp, $data, $rs) {
-	$default = MLPLanguageHandler::get_site_default_lang();
-
-	#
-	#	Insert the remaining language fields...
-	#
-	global $l10n_mappings;
-	$langs = MLPLanguageHandler::get_site_langs();
- 	$fields = $l10n_mappings['txp_link'];
-	$r = '';
-	$id = $rs['id'];
-
-	foreach( $fields as $field => $attributes )
-		{
-		foreach( $langs as $lang )
-			{
-			$full_name = MLPLanguageHandler::get_native_name_of_lang( $lang );
-			$dir = MLPLanguageHandler::get_lang_direction_markup( $lang );
- 			if( $lang !== $default )
-				{
-				$field_name = _l10n_make_field_name( $field , $lang );
-				$r .= '<p class="edit-link-description"><span class="edit-label">';
-				$r .= '<label for="link_description_'.$lang.'">['.$full_name.']</label></span>';
-				$r .= '<textarea id="link_description_'.$lang.'" name="'.$field_name .'" cols="'.INPUT_LARGE.'" rows="'.INPUT_SMALL.'"'.$dir.'>';
-				$r .= $rs[$field_name];
-				$r .= '</textarea></p>'.n;
-				}
-			}
-		}
-	return $r;
-}
-
 function _l10n_link_paint( $page )
 	{
 	$default = MLPLanguageHandler::get_site_default_lang();
@@ -1602,9 +1569,46 @@ function _l10n_link_paint( $page )
 	$f = 'for="link_description">'.gTxt('description');
 	$r = '['.MLPLanguageHandler::get_native_name_of_lang( $default ) . ']';
 	$page = str_replace( $f , $f.n.$r , $page );
+	
+	#
+	#	Insert the remaining language fields...
+	#
+	global $l10n_mappings;
+	$langs = MLPLanguageHandler::get_site_langs();
+ 	$fields = $l10n_mappings['txp_link'];
+	$id = gps( 'id' );
+	assert_int($id);
+	$row = safe_row( '*' , 'txp_link' , "`id`='$id'" );
+	
+	if( $row )
+		{
+		preg_match_all('/<div class="txp-form-field txp-form-field-textarea edit-link-description">([^<]*<[^>]*>){11}/', $page, $m);
+		$f = $m[0][0];
+
+		foreach( $fields as $field => $attributes )
+			{
+			$r = '';
+			foreach( $langs as $lang )
+				{
+				$full_name = MLPLanguageHandler::get_native_name_of_lang( $lang );
+				$dir = MLPLanguageHandler::get_lang_direction_markup( $lang );
+				
+				if( $lang !== $default )
+					{
+					$field_name = _l10n_make_field_name( $field , $lang );
+					$r .= '<div class="txp-form-field txp-form-field-textarea edit-link-description">';
+					$r .= '<div class="txp-form-field-label"><label for="link_description_'.$lang.'">'.gTxt('description').' ['. $full_name .']</label></div>';
+					$r .= '<div class="txp-form-field-value"><textarea id="link_description_'.$lang.'" '.$dir.' name="'.$field_name.'" cols="'.INPUT_LARGE.'" rows="'.INPUT_XSMALL.'">'.$row[$field_name].'</textarea></div>';
+					$r .= '</div>';
+					}
+				}
+				$page = str_replace( $f , $f.n.$r , $page );
+			}
+		}
 
 	return $page;
 	}
+
 function _l10n_link_save( $event , $step )
 	{
 	$id_name = 'id';
