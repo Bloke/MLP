@@ -1345,10 +1345,6 @@ function _l10n_category_paint( $page )
 	{
 	$default = MLPLanguageHandler::get_site_default_lang();
 
-	$id = gps( 'id' );
-	assert_int($id);
-	$row = safe_row( '*' , 'txp_category' , "`id`='$id'" );
-
 	#
 	#	Insert the default title field's language's direction...
 	#
@@ -1362,34 +1358,40 @@ function _l10n_category_paint( $page )
 	$f = '<label for="category_title">'.gTxt($row['type'].'_category_title');
 	$r = ' ['.MLPLanguageHandler::get_native_name_of_lang( $default ).']';
 	$page = str_replace( $f , $f.sp.$r , $page );
-	
+
 	#
 	#	Insert the remaining language fields...
 	#
 	global $l10n_mappings;
 	$langs = MLPLanguageHandler::get_site_langs();
  	$fields = $l10n_mappings['txp_category'];
-	preg_match_all('/<div class="txp-form-field edit-category-title">([^<]*<[^>]*>){8}/', $page, $m);
-	$f = $m[0][0];
-	
-	foreach( $fields as $field => $attributes )
+	$id = gps( 'id' );
+	assert_int($id);
+	$row = safe_row( '*' , 'txp_category' , "`id`='$id'" );
+	if( $row )
 		{
-		$r = '';
-		foreach( $langs as $lang )
+		preg_match_all('/<div class="txp-form-field edit-category-title">([^<]*<[^>]*>){8}/', $page, $m);
+		$f = $m[0][0];
+		
+		foreach( $fields as $field => $attributes )
 			{
-			$full_name = MLPLanguageHandler::get_native_name_of_lang( $lang );
-			$dir = MLPLanguageHandler::get_lang_direction_markup( $lang );
-			
-			if( $lang !== $default )
+			$r = '';
+			foreach( $langs as $lang )
 				{
-				$field_name = _l10n_make_field_name( $field , $lang );
-				$r .= '<div class="txp-form-field edit-category-title">';
-				$r .= '<div class="txp-form-field-label"><label for="category_title_'.$lang.'">'.gTxt($row['type'].'_category_title').' ['. $full_name .']</label></div>';
-				$r .= '<div class="txp-form-field-value"><input id="category_title_'.$lang.'" '.$dir.' name="'. $field_name .'" type="text" size="'.INPUT_REGULAR.'" value="'. $row[$field_name] .'" /></div>';
-				$r .= '</div>';
+				$full_name = MLPLanguageHandler::get_native_name_of_lang( $lang );
+				$dir = MLPLanguageHandler::get_lang_direction_markup( $lang );
+				
+				if( $lang !== $default )
+					{
+					$field_name = _l10n_make_field_name( $field , $lang );
+					$r .= '<div class="txp-form-field edit-category-title">';
+					$r .= '<div class="txp-form-field-label"><label for="category_title_'.$lang.'">'.gTxt($row['type'].'_category_title').' ['. $full_name .']</label></div>';
+					$r .= '<div class="txp-form-field-value"><input id="category_title_'.$lang.'" '.$dir.' name="'. $field_name .'" type="text" size="'.INPUT_REGULAR.'" value="'. $row[$field_name] .'" /></div>';
+					$r .= '</div>';
+					}
 				}
+				$page = str_replace( $f , $f.n.$r , $page );
 			}
-			$page = str_replace( $f , $f.n.$r , $page );
 		}
 
 	return $page;
