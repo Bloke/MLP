@@ -1506,7 +1506,6 @@ function _l10n_file_paint( $page )
 	$id = gps( 'id' );
 	assert_int($id);
 	$row = safe_row( '*' , 'txp_file' , "`id`='$id'" );
-	$dir = MLPLanguageHandler::get_lang_direction_markup( $default ) . ' ';
 	if( $row )
 		{
 		foreach( $fields as $field => $attributes )
@@ -1593,7 +1592,6 @@ function _l10n_link_paint( $page )
 	$id = gps( 'id' );
 	assert_int($id);
 	$row = safe_row( '*' , 'txp_link' , "`id`='$id'" );
-	
 	if( $row )
 		{
 		preg_match_all('/<div class="txp-form-field txp-form-field-textarea edit-link-description">([^<]*<[^>]*>){11}/', $page, $m);
@@ -1665,7 +1663,6 @@ function _l10n_image_paint( $page )
 	$id = gps( 'id' );
 	assert_int($id);
 	$row = safe_row( '*' , 'txp_image' , "`id`='$id'" );
-	
 	if( $row )
 		{
 		foreach( $fields as $field => $attributes )
@@ -1677,6 +1674,7 @@ function _l10n_image_paint( $page )
 					preg_match_all('/<div class="txp-form-field edit-image-alt-text">([^<]*<[^>]*>){8}/', $page, $m);
 					$f = $m[0][0];
 					$full_name = MLPLanguageHandler::get_native_name_of_lang( $default );
+					$dir = MLPLanguageHandler::get_lang_direction_markup( $default );
 					$r .= '<div class="txp-form-field edit-image-alt-text">';
 					$r .= '<div class="txp-form-field-label"><label for="image_alt_text">'.gTxt('alt_text').' ['.$full_name.']</label></div>';
 					$r .= '<div class="txp-form-field-value"><textarea id="image_alt_text" '.$dir.' name="'.$field .'" cols="'.INPUT_LARGE.'" rows="'.INPUT_XSMALL.'">'.$row[$field].'</textarea></div>';
