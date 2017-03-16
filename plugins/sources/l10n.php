@@ -855,6 +855,24 @@ if (@txpinterface === 'public')
 		$pattern2 = _l10n_make_pattern();
 		$buffer = _l10n_preg_replace_callback( $pattern2 , '_l10n_inject_lang_markers_cb' , $buffer );
 
+                $l10n_replace_strings['start'] = $l10n_replace_strings['start_rep'] = '<loc>';
+                $l10n_replace_strings['stop']  = $l10n_replace_strings['stop_rep']  = '</loc>';
+                $l10n_replace_strings['insert_blank'] = false;
+                $pattern3 = _l10n_make_pattern();
+                $buffer = _l10n_preg_replace_callback( $pattern3 , '_l10n_inject_lang_markers_cb' , $buffer );
+
+                $l10n_replace_strings['start'] = $l10n_replace_strings['start_rep'] = '<link>';
+                $l10n_replace_strings['stop']  = $l10n_replace_strings['stop_rep']  = '</link>';
+                $l10n_replace_strings['insert_blank'] = false;
+                $pattern4 = _l10n_make_pattern();
+                $buffer = _l10n_preg_replace_callback( $pattern4 , '_l10n_inject_lang_markers_cb' , $buffer );
+
+                $l10n_replace_strings['start'] = $l10n_replace_strings['start_rep'] = '<guid>';
+                $l10n_replace_strings['stop']  = $l10n_replace_strings['stop_rep']  = '</guid>';
+                $l10n_replace_strings['insert_blank'] = false;
+                $pattern5 = _l10n_make_pattern();
+                $buffer = _l10n_preg_replace_callback( $pattern5 , '_l10n_inject_lang_markers_cb' , $buffer );
+
 		if (0)	#debug
 			$buffer = 'Exclusions... :' . join( ', ' , $l10n_url_exclusions ) . $buffer;
 
