@@ -1,52 +1,82 @@
 <?php
 
+// This is a PLUGIN TEMPLATE for Textpattern CMS.
+
+// Copy this file to a new name like abc_myplugin.php.  Edit the code, then
+// run this file at the command line to produce a plugin for distribution:
+// $ php abc_myplugin.php > abc_myplugin-0.1.txt
+
+// Plugin name is optional.  If unset, it will be extracted from the current
+// file name. Plugin names should start with a three letter prefix which is
+// unique and reserved for each plugin author ("abc" is just an example).
+// Uncomment and edit this line to override:
 $plugin['name'] = 'gbp_admin_library';
-$plugin['version'] = '0.4.2';
+
+// Allow raw HTML help, as opposed to Textile.
+// 0 = Plugin help is in Textile format, no raw HTML allowed (default).
+// 1 = Plugin help is in raw HTML.  Not recommended.
+# $plugin['allow_html_help'] = 1;
+
+$plugin['version'] = '4.6.2.20170310';
 $plugin['author'] = 'Graeme Porteous';
-$plugin['author_uri'] = 'http://rgbp.co.uk/projects/textpattern/gbp_admin_library/';
-$plugin['description'] = 'GBP\'s Admin-Side Library';
+$plugin['author_uri'] = '';
+$plugin['description'] = 'GBP Admin-Side Library';
+
+// Plugin load order:
+// The default value of 5 would fit most plugins, while for instance comment
+// spam evaluators or URL redirectors would probably want to run earlier
+// (1...4) to prepare the environment for everything else that follows.
+// Values 6...9 should be considered for plugins which would work late.
+// This order is user-overrideable.
+$plugin['order'] = '5';
+
+// Plugin 'type' defines where the plugin is loaded
+// 0 = public              : only on the public side of the website (default)
+// 1 = public+admin        : on both the public and admin side
+// 2 = library             : only when include_plugin() or require_plugin() is called
+// 3 = admin               : only on the admin side (no AJAX)
+// 4 = admin+ajax          : only on the admin side (AJAX supported)
+// 5 = public+admin+ajax   : on both the public and admin side (AJAX supported)
 $plugin['type'] = '2';
 
-@include_once('../zem_tpl.php');
+// Plugin "flags" signal the presence of optional capabilities to the core plugin loader.
+// Use an appropriately OR-ed combination of these flags.
+// The four high-order bits 0xf000 are available for this plugin's private use
+if (!defined('PLUGIN_HAS_PREFS')) define('PLUGIN_HAS_PREFS', 0x0001); // This plugin wants to receive "plugin_prefs.{$plugin['name']}" events
+if (!defined('PLUGIN_LIFECYCLE_NOTIFY')) define('PLUGIN_LIFECYCLE_NOTIFY', 0x0002); // This plugin wants to receive "plugin_lifecycle.{$plugin['name']}" events
 
-if (0) {
-?>
-<!-- CSS SECTION
-# --- BEGIN PLUGIN CSS ---
-<style type="text/css">
-div#adminlib_help td { vertical-align:top; }
-div#adminlib_help code { font-weight:bold; font: 105%/130% "Courier New", courier, monospace; background-color: #FFFFCC;}
-div#adminlib_help code.code_tag { font-weight:normal; border:1px dotted #999; background-color: #f0e68c; display:block; margin:10px 10px 20px; padding:10px; }
-div#adminlib_help a:link, div#adminlib_help a:visited { color: blue; text-decoration: none; border-bottom: 1px solid blue; padding-bottom:1px;}
-div#adminlib_help a:hover, div#adminlib_help a:active { color: blue; text-decoration: none; border-bottom: 2px solid blue; padding-bottom:1px;}
-div#adminlib_help h1 { color: #369; font: 20px Georgia, sans-serif; margin: 0; text-align: center; }
-div#adminlib_help h2 { border-bottom: 1px solid black; padding:10px 0 0; color: #369; font: 17px Georgia, sans-serif; }
-div#adminlib_help h3 { color: #693; font: bold 12px Arial, sans-serif; letter-spacing: 1px; margin: 10px 0 0;text-transform: uppercase;}
-</style>
-# --- END PLUGIN CSS ---
--->
-<!-- HELP SECTION
-# --- BEGIN PLUGIN HELP ---
+$plugin['flags'] = '0';
 
-<div id="adminlib_help">
+// Plugin 'textpack' is optional. It provides i18n strings to be used in conjunction with gTxt().
+// Syntax:
+// ## arbitrary comment
+// #@event
+// #@language ISO-LANGUAGE-CODE
+// abc_string_name => Localized String
 
-h1(#top). Graeme Porteous' Admin Library.
+/** Uncomment me, if you need a textpack
+$plugin['textpack'] = <<< EOT
+#@admin
+#@language en-gb
+abc_sample_string => Sample String
+abc_one_more => One more
+#@language de-de
+abc_sample_string => Beispieltext
+abc_one_more => Noch einer
+EOT;
+**/
+// End of textpack
 
-Provides basic classes for building the admin side of your own, derived, plugins.
+if (!defined('txpinterface'))
+        @include_once('zem_tpl.php');
 
-</div>
-
-# --- END PLUGIN HELP ---
--->
-<?php
-}
 # --- BEGIN PLUGIN CODE ---
-
 // Constants
 define('gbp_tab', 'tab');
 define('gbp_id', 'id');
 
-class GBPPlugin {
+class GBPPlugin
+{
 	// Internal variables
 	var $plugin_name;
 	var $title;
@@ -62,7 +92,7 @@ class GBPPlugin {
 	var $wizard_installed = false;
 
 	// Constructor
-	function GBPPlugin ($title = '', $event = '', $parent_tab = '') {
+	public function __construct($title = '', $event = '', $parent_tab = '') {
 
 		global $txp_current_plugin;
 
@@ -133,7 +163,7 @@ class GBPPlugin {
 			$this->load_preferences();
 	}
 
-	function load_preferences () {
+	public function load_preferences () {
 		/*
 		Grab and store all preferences with event matching this plugin, combine gbp_partial
 		rows and decode the value if it's of custom type.
@@ -186,7 +216,7 @@ class GBPPlugin {
 		}
 	}
 
-	function set_preference ($key, $value, $type = '') {
+	public function set_preference ($key, $value, $type = '') {
 		global $prefs, $txp_current_plugin;
 
 		// If the plugin_name or event isn't set is it safe to assume
@@ -240,12 +270,12 @@ class GBPPlugin {
 		}
 	}
 
-	function remove_preference ($key) {
+	public function remove_preference ($key) {
 		$event = $this->event;
 		safe_delete('txp_prefs', "event = '$event' AND ((name LIKE '$key') OR (name LIKE '{$key}_%' AND html = 'gbp_partial'))");
 	}
 
-	function gbp_serialized ($step, $value, $item = '') {
+	public function gbp_serialized ($step, $value, $item = '') {
 		switch (strtolower($step)) {
 			default:
 			case 'ui_in':
@@ -265,7 +295,7 @@ class GBPPlugin {
 		return '';
 	}
 
-	function gbp_array_text ($step, $value, $item = '') {
+	public function gbp_array_text ($step, $value, $item = '') {
 		switch (strtolower($step)) {
 			default:
 			case 'ui_in':
@@ -285,7 +315,7 @@ class GBPPlugin {
 		return '';
 	}
 
-	function &add_tab ($tab, $is_default = NULL) {
+	public function &add_tab ($tab, $is_default = NULL) {
 
 		// Check to see if the tab is active
 		if (($is_default && !gps(gbp_tab)) || (gps(gbp_tab) == $tab->event))
@@ -322,11 +352,11 @@ class GBPPlugin {
 		return $this;
 	}
 
-	function preload () {
+	public function preload () {
 		// Override this function if you require sub tabs.
 	}
 
-	function render () {
+	public function render () {
 
 		// render() gets called because it is specified in txp's register_callback()
 
@@ -347,7 +377,7 @@ class GBPPlugin {
 		$this->end();
 	}
 
-	function render_header () {
+	public function render_header () {
 
 		// Render the pagetop, a txp function
 		pagetop($this->title, $this->message);
@@ -356,7 +386,7 @@ class GBPPlugin {
 		$this->message = '';
 	}
 
-	function render_tabs () {
+	public function render_tabs () {
 		// This table, which contains the tags, will have to be changed if any improvements
 		// happen to the admin interface
 		$out[] = '<div id="'.$this->plugin_name.'_control" class="txp-control-panel">';
@@ -386,16 +416,16 @@ class GBPPlugin {
 		}
 
 		$out[] = '</p>';
-		$out[] = '</div><div>';
+		$out[] = '</div><div class="clear">';
 
 		echo join('', $out);
 	}
 
-	function main () {
+	public function main () {
 		// Override this function
 	}
 
-	function render_tab_main () {
+	public function render_tab_main () {
 
 		// Call main() for the active_tab
 		$tab = &$this->tabs[$this->active_tab];
@@ -405,7 +435,7 @@ class GBPPlugin {
 			echo '<p>'.gTxt('restricted_area').'</p>';
 	}
 
-	function render_footer () {
+	public function render_footer () {
 
 		// A simple footer
 		global $plugins_ver;
@@ -419,11 +449,11 @@ class GBPPlugin {
 		echo join('', $out);
 	}
 
-	function end () {
+	public function end () {
 		// Override this function
 	}
 
-	function form_inputs () {
+	public function form_inputs () {
 
 		$out[] = eInput($this->event);
 
@@ -436,7 +466,7 @@ class GBPPlugin {
 		return join('', $out);
 	}
 
-	function url ($vars = array(), $gp = false) {
+	public function url ($vars = array(), $gp = false) {
 		/*
 		Expands $vars into a get style url and redirects to that location. These can be
 		overriden with the current get, post, session variables defined in $this->gp
@@ -454,13 +484,12 @@ class GBPPlugin {
 				$out[] = $key.'='.urlencode($value);
 		}
 
-		$script = hu.basename(txpath).'/index.php';
-		return $script . (isset($out)
+		return (isset($out)
 			? '?'.join('&', $out)
 			: '');
 	}
 
-	function redirect ($url = '', $status = 303) {
+	public function redirect ($url = '', $status = 303) {
 		/*
 		If $vars is an array, use url() to expand as an GET style url and redirect to
 		that location using the HTTP status code definition defined by $status.
@@ -510,7 +539,7 @@ END;
 		}
 	}
 
-	function pref ($key) {
+	public function pref ($key) {
 		global $prefs, $txp_current_plugin;
 
 		$plugin = ($this->plugin_name) ? $this->plugin_name : $txp_current_plugin;
@@ -524,7 +553,8 @@ END;
 	}
 }
 
-class GBPAdminTabView {
+class GBPAdminTabView
+{
 	//	Internal variables
 	var $title;
 	var $event;
@@ -533,7 +563,7 @@ class GBPAdminTabView {
 	var $permissions = '1,2,3,4,5,6';
 
 	//	Constructor
-	function GBPAdminTabView ($title, $event, &$parent, $is_default = NULL) {
+	public function __construct($title, $event, &$parent, $is_default = NULL) {
 
 		$this->title = (function_exists('mb_convert_case'))
 			? mb_convert_case($title, MB_CASE_TITLE, "UTF-8")
@@ -550,7 +580,7 @@ class GBPAdminTabView {
 		add_privs($this->parent->event.'.'.$this->event, ($perms ? $perms : $this->permissions));
 	}
 
-	function php_4_fix () {
+	public function php_4_fix () {
 
 		// Fix references in PHP 4 so sub tabs can access their parent tab
 		if (version_compare(phpversion(), '5.0.0', '<')) {
@@ -559,11 +589,11 @@ class GBPAdminTabView {
 		}
 	}
 
-	function preload () {
+	public function preload () {
 		// Override this function
 	}
 
-	function render_tab () {
+	public function render_tab () {
 
 		// Grab the url to this tab
 		$url = $this->parent->url(array(gbp_tab => $this->event), true);
@@ -574,45 +604,45 @@ class GBPAdminTabView {
 		return join('', $out);
 	}
 
-	function main () {
+	public function main () {
 		// Override this function
 	}
 
-	function pref ($key) {
+	public function pref ($key) {
 		return @$this->parent->pref($key);
 	}
 
-	function redirect ($vars = '') {
+	public function redirect ($vars = '') {
 		$this->parent->redirect($vars);
 	}
 
-	function set_preference ($key, $value, $type = '') {
+	public function set_preference ($key, $value, $type = '') {
 		return $this->parent->set_preference($key, $value, $type);
 	}
 
-	function remove_preference ($key) {
+	public function remove_preference ($key) {
 		return $this->parent->remove_preference($key);
 	}
 
-	function url ($vars, $gp = false) {
+	public function url ($vars, $gp = false) {
 		return $this->parent->url($vars, $gp);
 	}
 
-	function form_inputs () {
+	public function form_inputs () {
 		return $this->parent->form_inputs();
 	}
 }
 
-class GBPPreferenceTabView extends GBPAdminTabView {
-
+class GBPPreferenceTabView extends GBPAdminTabView
+{
 	var $permissions = 'prefs';
 
-	function GBPPreferenceTabView (&$parent, $is_default = NULL) {
+	public function __construct(&$parent, $is_default = NULL) {
 		// Call the parent constructor
-		GBPAdminTabView::GBPAdminTabView(gTxt('tab_preferences'), 'preference', $parent, $is_default);
+		parent::__construct(gTxt('tab_preferences'), 'preference', $parent, $is_default);
 	}
 
-	function preload () {
+	public function preload () {
 		if (ps('step') == 'prefs_save') {
 			foreach ($this->parent->preferences as $key => $pref) {
 				extract($pref);
@@ -624,7 +654,7 @@ class GBPPreferenceTabView extends GBPAdminTabView {
 		}
 	}
 
-	function main () {
+	public function main () {
 		// Make txp_prefs.php happy :)
 		global $event;
 		$event = $this->parent->event;
@@ -664,19 +694,19 @@ class GBPPreferenceTabView extends GBPAdminTabView {
 			'</form>';
 	}
 
-	function popHelp ($helpvar) {
+	public function popHelp ($helpvar) {
 		$script = hu.basename(txpath).'/index.php';
 		return '<a href="'.$script.'?event=plugin'.a.'step=plugin_help'.a.'name='.$this->parent->plugin_name.'#'.$helpvar.'" class="pophelp">?</a>';
 	}
 }
 
-class GBPWizardTabView extends GBPAdminTabView {
-
+class GBPWizardTabView extends GBPAdminTabView
+{
 	var $installation_steps = array();
 	var $wiz_report = array();
 	var $permissions = 'admin.edit';
 
-	function GBPWizardTabView (&$parent, $is_default = NULL, $title = 'Wizards') {
+	public function __construct(&$parent, $is_default = NULL, $title = 'Wizards') {
 		global $textarray;
 
 		#
@@ -691,10 +721,10 @@ class GBPWizardTabView extends GBPAdminTabView {
 		$this->installation_steps = $this->get_steps();
 
 		// Call the parent constructor
-		GBPAdminTabView::GBPAdminTabView($title, 'wizard', $parent, $is_default);
+		parent::__construct($title, 'wizard', $parent, $is_default);
 	}
 
-	function get_steps () {
+	public function get_steps () {
 		#
 		#	Override this method in derived classes to return the appropriate setup/cleanup steps.
 		#
@@ -706,7 +736,7 @@ class GBPWizardTabView extends GBPAdminTabView {
 		return $steps;
 	}
 
-	function get_strings ($language = '') {
+	public function get_strings ($language = '') {
 		#
 		#	Override this function in derived classes to define/change the set of strings to
 		# inject into $textarray to localise the wizard.
@@ -733,7 +763,7 @@ class GBPWizardTabView extends GBPAdminTabView {
 		return $strings;
 	}
 
-	function versions_ok () {
+	public function versions_ok () {
 		$msg = '';
 
 		#
@@ -768,11 +798,11 @@ class GBPWizardTabView extends GBPAdminTabView {
 		return true;
 	}
 
-	function get_required_versions () {
+	public function get_required_versions () {
 		global $prefs;
 
 		#
-		#	Override this function to return an array of tests to be carried out.
+		#	Override this public public public function to return an array of tests to be carried out.
 		#
 		$tests = array('TxP' => array(
 			'current'	=> $prefs['version'],
@@ -781,7 +811,7 @@ class GBPWizardTabView extends GBPAdminTabView {
 		return $tests;
 	}
 
-	function main () {
+	public function main () {
 		$out[] = '<style type="text/css"> .success { color: #009900; } .failure { color: #FF0000; } .skipped { color: #0000FF; } </style>';
 		$out[] = '<div style="border: 1px solid gray; width: 50em; text-align: center; margin: 1em auto; padding: 1em; clear: both;">';
 
@@ -853,11 +883,11 @@ class GBPWizardTabView extends GBPAdminTabView {
 		echo form(join(n, $out), '', $verify);
 	}
 
-	function installed () {
+	public function installed () {
 		return false;
 	}
 
-	function wizard_steps ($step) {
+	public function wizard_steps ($step) {
 		$step_details = '';
 
 		foreach ($this->installation_steps as $key => $detail) {
@@ -884,7 +914,7 @@ class GBPWizardTabView extends GBPAdminTabView {
 		return $step_details.n;
 	}
 
-	function wizard_report () {
+	public function wizard_report () {
 		// Render the wizard report as an ordered list. There maybe
 		// 'sub' reports which we need to also render as ordered lists
 		$out = array();
@@ -908,7 +938,7 @@ class GBPWizardTabView extends GBPAdminTabView {
 		return tag(join(n , $out) , 'ol');
 	}
 
-	function add_report_item ($string , $ok = NULL, $sub = false) {
+	public function add_report_item ($string , $ok = NULL, $sub = false) {
 		if (isset($ok)) {
 			switch ($ok) {
 				case '1' :
@@ -938,35 +968,62 @@ class GBPWizardTabView extends GBPAdminTabView {
 			$this->wiz_report[] = array($line);
 	}
 
-	function setup_basic () {
+	public function setup_basic () {
 		$this->add_report_item(gTxt('gbp_adlib_wiz-step_basic'), true);
 	}
 
-	function cleanup_basic () {
+	public function cleanup_basic () {
 		$this->add_report_item(gTxt('gbp_adlib_wiz-step_basic'), false);
 	}
 
-	function setup_optional () {
+	public function setup_optional () {
 		$this->add_report_item(gTxt('gbp_adlib_wiz-step_optional'), true);
 	}
 
-	function cleanup_optional () {
+	public function cleanup_optional () {
 		$this->add_report_item(gTxt('gbp_adlib_wiz-step_optional'), false);
 	}
 
-	function setup_has_options () {
+	public function setup_has_options () {
 		$this->add_report_item(gTxt('gbp_adlib_wiz-step_complex'), true);
 	}
 
-	function cleanup_has_options () {
+	public function cleanup_has_options () {
 		$this->add_report_item(gTxt('gbp_adlib_wiz-step_complex'), false);
 	}
 
-	function option_has_options ($step) {
+	public function option_has_options ($step) {
 		return graf(gTxt('gbp_adlib_wiz-step_complex_txt' , array('{step}' => $step))).yesnoRadio('wizard_has_options_test', 1);
 	}
 }
-
 # --- END PLUGIN CODE ---
+if (0) {
+?>
+<!--
+# --- BEGIN PLUGIN CSS ---
+<style type="text/css">
+div#adminlib_help td { vertical-align:top; }
+div#adminlib_help code { font-weight:bold; font: 105%/130% "Courier New", courier, monospace; background-color: #FFFFCC;}
+div#adminlib_help code.code_tag { font-weight:normal; border:1px dotted #999; background-color: #f0e68c; display:block; margin:10px 10px 20px; padding:10px; }
+div#adminlib_help a:link, div#adminlib_help a:visited { color: blue; text-decoration: none; border-bottom: 1px solid blue; padding-bottom:1px;}
+div#adminlib_help a:hover, div#adminlib_help a:active { color: blue; text-decoration: none; border-bottom: 2px solid blue; padding-bottom:1px;}
+div#adminlib_help h1 { color: #369; font: 20px Georgia, sans-serif; margin: 0; text-align: center; }
+div#adminlib_help h2 { border-bottom: 1px solid black; padding:10px 0 0; color: #369; font: 17px Georgia, sans-serif; }
+div#adminlib_help h3 { color: #693; font: bold 12px Arial, sans-serif; letter-spacing: 1px; margin: 10px 0 0;text-transform: uppercase;}
+</style>
+# --- END PLUGIN CSS ---
+-->
+<!--
+# --- BEGIN PLUGIN HELP ---
+<div id="adminlib_help">
 
+h1(#top). Graeme Porteous' Admin Library.
+
+Provides basic classes for building the admin side of your own, derived, plugins.
+
+</div>
+# --- END PLUGIN HELP ---
+-->
+<?php
+}
 ?>

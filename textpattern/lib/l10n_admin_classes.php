@@ -9,7 +9,7 @@ global $l10n_language , $l10n_default_string_lang;
 # bring in the defaults...
 #
 $l10n_langname = LANG;
-$installed = l10n_installed();
+$installed = Txp::get('\Netcarver\MLP\Kickstart')->l10n_installed();
 if( $installed )
 	$l10n_langname = $l10n_language['long'];
 
@@ -46,7 +46,7 @@ class MLPTableManager
 		$results = array();
 
 		$rs = safe_rows_start( "$fname as name, $fdata as data", $table, '1=1' ) ;
-		if( $rs && mysql_num_rows($rs) > 0 )
+		if( $rs && mysqli_num_rows($rs) > 0 )
 			{
 			while ( $row = nextRow($rs) )
 				{
@@ -1028,7 +1028,7 @@ class MLPStrings
 			$close = 'OR event=\'admin\' )';
 
 		$rs = safe_rows_start('name, data, '.L10N_COL_OWNER ,'txp_lang','lang=\''.doSlash($lang).'\'' . $where . $close . $filter );
-		$count = @mysql_num_rows($rs);
+		$count = @mysqli_num_rows($rs);
 		if( $rs && $count > 0 )
 			{
 			while ( $a = nextRow($rs) )
@@ -1076,7 +1076,7 @@ class MLPStrings
 	static function get_strings( &$rs , &$stats )
 		{
 		$result = array();
-		if( $rs && mysql_num_rows($rs) > 0 )
+		if( $rs && mysqli_num_rows($rs) > 0 )
 			{
 			while ( $a = nextRow($rs) )
 				{
@@ -1182,7 +1182,7 @@ class MLPStrings
 		if( $string_event )
 			$where .= ' AND `event`="' . doSlash($string_event) . '"';
 		$rs = safe_rows_start( 'lang, id, event, data, '.L10N_COL_OWNER , 'txp_lang', $where );
-		if( $rs && mysql_num_rows($rs) > 0 )
+		if( $rs && mysqli_num_rows($rs) > 0 )
 			{
 			while ( $a = nextRow($rs) )
 				{
@@ -1222,7 +1222,7 @@ class MLPStrings
 
 		$where = ' `name` IN ('.$nameset.') AND `lang` = "'.doSlash($lang).'"';
 		$rs = safe_rows_start( 'name,data,event', 'txp_lang', $where );
-		if( $rs && mysql_num_rows($rs) > 0 )
+		if( $rs && mysqli_num_rows($rs) > 0 )
 			{
 			while ( $a = nextRow($rs) )
 				{
@@ -1239,7 +1239,7 @@ class MLPStrings
 
 		$where = ' `lang` IN ('.$langset.') AND `name` = "'.doSlash($name).'"';
 		$rs = safe_rows_start( 'lang,data,event', 'txp_lang', $where );
-		if( $rs && mysql_num_rows($rs) > 0 )
+		if( $rs && mysqli_num_rows($rs) > 0 )
 			{
 			while ( $a = nextRow($rs) )
 				{
@@ -1276,7 +1276,7 @@ class MLPStrings
 		$out[] = '#';
 		$out[] = '# =====================================================================';
 		$out[] = '# ';
-		$out[] = "#@version 4.5.2;".$time;
+		$out[] = "#@version 4.6.2;".$time;
 		$out[] = '# ';
 		foreach( $strings as $string )
 			{
@@ -1415,7 +1415,7 @@ class MLPPlugin extends GBPPlugin
 	var $insert_in_debug_mode = false;
 	var $permissions = '1,2,3,6';
 
-	function MLPPlugin( $title_alias , $event , $parent_tab = 'extensions' )
+	public function __construct( $title_alias , $event , $parent_tab = 'extensions' )
 		{
 		global $textarray , $production_status , $prefs;
 		global $l10n_default_strings , $l10n_default_strings_lang , $l10n_default_strings_perm;
@@ -1457,7 +1457,7 @@ class MLPPlugin extends GBPPlugin
 			}
 
 		# Be sure to call the parent constructor *after* the strings it needs are added and loaded!
-		GBPPlugin::GBPPlugin( gTxt($title_alias) , $event , $parent_tab );
+		parent::__construct( gTxt($title_alias) , $event , $parent_tab );
 		}
 
 	function _insert_css()
@@ -1523,9 +1523,8 @@ class MLPPlugin extends GBPPlugin
 				#
 				#	Add language tables as needed and populate them as far as possible...
 				#
-				$indexes = "(PRIMARY KEY  (`ID`), KEY `categories_idx` (`Category1`(10),`Category2`(10)), KEY `Posted` (`Posted`), FULLTEXT KEY `searching` (`Title`,`Body`))";
-				$sql = "create table `$full_name` $indexes ENGINE=MyISAM select * from `".PFX."textpattern` where ".L10N_COL_LANG."='$lang'";
-				$ok = safe_query( $sql );
+                                $sql = "CREATE VIEW `$full_name` AS SELECT * FROM `".PFX."textpattern` WHERE ".L10N_COL_LANG."='$lang'";
+                                $ok = safe_query( $sql );
 
 				#
 				#	Add fields for this language...
@@ -1553,7 +1552,7 @@ class MLPPlugin extends GBPPlugin
 				#
 				#	Drop language tables that are no longer needed...
 				#
-				$sql = 'drop table `'.$full_name.'`';
+                                $sql = 'DROP VIEW `'.$full_name.'`';
 				$ok = safe_query( $sql );
 
 				#
@@ -1630,7 +1629,7 @@ class MLPPlugin extends GBPPlugin
 		{
 		static $result;
 		if (!isset($result) || $recheck)
-			$result = l10n_installed();
+			$result = Txp::get('\Netcarver\MLP\Kickstart')->l10n_installed();
 		return $result;
 		}
 
@@ -1764,7 +1763,7 @@ class MLPSnipView extends GBPAdminTabView
 	var $active_tab = 0;
 	var $use_tabs = false;
 
-	function MLPSnipView( $title, $event, &$parent, $is_default = NULL )
+	public function __construct( $title, $event, &$parent, $is_default = NULL )
 		{
 		$this->tabs[] = new MLPStringView( gTxt('search') , 'search' , $this );
 		$this->tabs[] = new MLPStringView( gTxt('l10n-specials') , 'special' , $this );
@@ -1774,7 +1773,7 @@ class MLPSnipView extends GBPAdminTabView
 			$this->tabs[] = new MLPStringView( gTxt('forms') , 'form' , $this );
 		$this->tabs[] = new MLPSnipIOView( gTxt( 'l10n-inout' ) , 'inout' , $this );
 
-		GBPAdminTabView::GBPAdminTabView( $title , $event , $parent , $is_default );
+		parent::__construct( $title , $event , $parent , $is_default );
 		}
 	function get_canvas_style()
 		{
@@ -1842,11 +1841,11 @@ class MLPSnipView extends GBPAdminTabView
 class MLPSubTabView extends GBPAdminTabView
 	{
 	var $sub_tab = '';
-	function MLPSubTabView( $title, $event, &$parent, $is_default = NULL , $subtab = '' )
+	public function __construct( $title, $event, &$parent, $is_default = NULL , $subtab = '' )
 		{
 		if( !empty($subtab) )
 			$this->sub_tab = $subtab;
-		GBPAdminTabView::GBPAdminTabView( $title , $event , $parent , $is_default );
+		parent::__construct( $title , $event , $parent , $is_default );
 		}
 
 	function render_tab()
@@ -1889,15 +1888,15 @@ class MLPStringView extends GBPAdminTabView
 		return $this->parent->url( $vars , $gp );
 		}
 
-	function MLPStringView($title, $event, &$parent, $is_default = NULL)
+	public function __construct($title, $event, &$parent, $is_default = NULL)
 		{
 		if( $event !== 'plugin' )
 			{
 			$this->sub_tab = $event;
-			GBPAdminTabView::GBPAdminTabView( $title, 'snippets', $parent, $is_default );
+			parent::__construct( $title, 'snippets', $parent, $is_default );
 			}
 		else
-			GBPAdminTabView::GBPAdminTabView( $title, $event, $parent, $is_default );
+			parent::__construct( $title, $event, $parent, $is_default );
 		}
 
 
@@ -2161,7 +2160,7 @@ class MLPStringView extends GBPAdminTabView
 				$where .= " AND `lang`='$lang'";
 
 			$rs = safe_rows_start( 'DISTINCT name,data,lang', 'txp_lang', $where . " ORDER BY name ASC LIMIT 200" );
-			$count = @mysql_num_rows($rs);
+			$count = @mysqli_num_rows($rs);
 			}
 
 		if( $rs and $count > 0 )
@@ -2369,7 +2368,7 @@ class MLPStringView extends GBPAdminTabView
 	function _generate_list( $table , $fname , $fdata )						# left pane subroutine
 		{
 		$rs = safe_rows_start( "$fname as name, $fdata as data", $table, '1=1 ORDER BY '.$fname ) ;
-		if( $rs && mysql_num_rows($rs) > 0 )
+		if( $rs && mysqli_num_rows($rs) > 0 )
 			{
 			$can_edit = $this->pref('l10n-inline_editing');
 			$explain = false;
@@ -3099,9 +3098,9 @@ class MLPStringView extends GBPAdminTabView
 
 class MLPSnipIOView extends MLPSubTabView
 	{
-	function MLPSnipIOView($title, $event, &$parent, $is_default = NULL)
+	public function __construct($title, $event, &$parent, $is_default = NULL)
 		{
-		MLPSubTabView::MLPSubTabView( $title , 'snippets' , $parent , $is_default , $event );
+		parent::__construct( $title , 'snippets' , $parent , $is_default , $event );
 		}
 
 	function preload()
@@ -3503,7 +3502,7 @@ class MLPArticleView extends GBPAdminTabView
 	{
 	var $clone_by_id = '';
 	var	$statuses = array();
-	function MLPArticleView( $title, $event, &$parent, $is_default = NULL )
+	public function __construct( $title, $event, &$parent, $is_default = NULL )
 		{
 		$this->statuses = array(
 			1 => gTxt('draft'),
@@ -3512,7 +3511,7 @@ class MLPArticleView extends GBPAdminTabView
 			4 => gTxt('live'),
 			5 => gTxt('sticky'),
 			);
-		GBPAdminTabView::GBPAdminTabView( $title , $event , $parent , $is_default );
+		parent::__construct( $title , $event , $parent , $is_default );
 		}
 
 	function preload()
@@ -3610,11 +3609,13 @@ class MLPArticleView extends GBPAdminTabView
 
 	function _clone_rendition( $source , $article_id , $target_lang , $new_author='' )
 		{
+		global $DB;
 		unset( $source['ID' ] );
 		if( !empty( $new_author ) )
 			$source['AuthorID'] = $new_author;
 		$source[L10N_COL_LANG] = $target_lang;
 		$source['Status'] = 1;
+		$source['Posted'] = 'now()';
 		$source['LastMod'] = 'now()';
 		$source['feed_time'] = 'now()';
 		$source['uid'] = md5(uniqid(rand(),true));
@@ -3635,21 +3636,12 @@ class MLPArticleView extends GBPAdminTabView
 		#	Insert into the master textpattern table...
 		#
 		safe_insert( 'textpattern' , $insert_sql );
-		$rendition_id = mysql_insert_id();
+		$rendition_id = mysqli_insert_id($DB->link);
 
 		#
 		#	Add this to the group (article) table...
 		#
 		MLPArticles::add_rendition( $article_id , $rendition_id , $target_lang );
-
-		#
-		#	Add into the rendition table for this lang ensuring this has the ID of the
-		# just added master entry!
-		#
-		$insert[] = '`ID`='.doSlash( $rendition_id );
-		$insert_sql = join( ', ' , $insert );
-		$table_name = _l10n_make_textpattern_name( array( 'long'=>$target_lang ) );
-		safe_insert( $table_name , $insert_sql );
 
 		return $rendition_id;
 		}
@@ -3791,16 +3783,6 @@ class MLPArticleView extends GBPAdminTabView
 		$master_deleted = safe_delete( 'textpattern' , L10N_COL_GROUP."=$article" );
 
 		#
-		#	Delete from the rendition tables...
-		#
-		foreach( $renditions as $rendition )
-			{
-			$lang = $rendition[L10N_COL_LANG];
-			$rendition_table = _l10n_make_textpattern_name( array( 'long'=>$lang ) );
-			safe_delete( $rendition_table , L10N_COL_GROUP."=$article" );
-			}
-
-		#
 		#	Delete from the articles table...
 		#
 		MLPArticles::destroy_article( $article );
@@ -3837,8 +3819,8 @@ class MLPArticleView extends GBPAdminTabView
 		#
 		#	Delete from the correct language rendition table...
 		#
-		$rendition_table = _l10n_make_textpattern_name( array( 'long'=>$lang ) );
-		$rendition_deleted = safe_delete( $rendition_table , "`ID`=$rendition" );
+		# (not required, as tables changed by views)
+		$rendition_deleted = true;
 
 		#
 		#	Delete from the article table...
@@ -4603,7 +4585,7 @@ class MLPWizView extends GBPWizardTabView
 
 	function installed()
 		{
-		return l10n_installed();
+		return Txp::get('\Netcarver\MLP\Kickstart')->l10n_installed();
 		}
 
 	function get_strings( $language = '' )
@@ -4647,7 +4629,7 @@ class MLPWizView extends GBPWizardTabView
 
 	function get_required_versions()
 		{
-		global $prefs;
+		global $prefs, $DB;
 
 		$can_setup_cleanup = (gps( 'skip-wiz-privilege-check' )) ? true : $this->can_install();
 
@@ -4661,7 +4643,7 @@ class MLPWizView extends GBPWizardTabView
 						'min'		=> '5.2.0' ,
 						),
 					'MySQL'  => array(
-						'current'	=> mysql_get_server_info() ,
+						'current'	=> $DB->version ,
 						'min'		=> '4.1' ,
 						),
 					);
@@ -4814,10 +4796,10 @@ class MLPWizView extends GBPWizardTabView
 		}
 	function can_install()
 		{
-		global $txpcfg;
+		global $txpcfg, $DB;
 		$host  = $txpcfg['host'];
 		$user  = $txpcfg['user'];
-		$version = mysql_get_server_info();
+		$version = $DB->version;
 		$matched = false;
 
 		$debug = gps( 'debugwiz' );
@@ -5044,7 +5026,7 @@ class MLPWizView extends GBPWizardTabView
 		#
 		#	Reset the session variable (in case of a language switch and then a reinstall)...
 		#
-		l10n_session_start();
+		Txp::get('\Netcarver\MLP\Kickstart')->l10n_session_start();
 		$temp = LANG;
 		$tmp = substr( $temp , 0 , 2 );
 		if( !empty($temp) )
@@ -5209,17 +5191,17 @@ class MLPWizView extends GBPWizardTabView
 		# Create the first instances of the language tables as straight copies of the existing
 		# textpattern table so users on the public side still see everything until we start editing
 		# articles.
+		global $DB;
 		$langs = $this->pref('l10n-languages');
 		$this->add_report_item( gTxt('l10n-op_tables',array('{op}'=>'Add' ,'{tables}'=>'per-language article')).'&#8230;' );
 		foreach( $langs as $lang )
 			{
 			$code       = MLPLanguageHandler::compact_code( $lang );
 			$table_name = _l10n_make_textpattern_name( $code );
-			$indexes = "(PRIMARY KEY  (`ID`), KEY `categories_idx` (`Category1`(10),`Category2`(10)), KEY `Posted` (`Posted`), FULLTEXT KEY `searching` (`Title`,`Body`))";
 
-			$sql = "create table `".PFX."$table_name` $indexes ENGINE=MyISAM select * from `".PFX."textpattern` where `".L10N_COL_LANG."`='$lang'";
+                        $sql = "CREATE VIEW `".PFX."$table_name` AS SELECT * FROM `".PFX."textpattern` WHERE ".L10N_COL_LANG."='$lang'";
 			$ok = safe_query( $sql );
-			if (mysql_error() == "Table '".PFX."$table_name' already exists")
+			if (mysqli_error($DB->link) == "Table '".PFX."$table_name' already exists")
 				$ok = 'skipped';
 
 			$this->add_report_item( gTxt('l10n-op_table',array('{op}'=>'Add' ,'{table}'=>MLPLanguageHandler::get_native_name_of_lang( $lang ).' ['.$table_name.']')) , $ok , true );
@@ -5375,7 +5357,7 @@ class MLPWizView extends GBPWizardTabView
 			{
 			$code  = MLPLanguageHandler::compact_code( $lang );
 			$table_name = _l10n_make_textpattern_name( $code );
-			$sql = 'drop table `'.PFX.$table_name.'`';
+                        $sql = 'DROP VIEW `'.PFX.$table_name.'`';
 			$ok = safe_query( $sql );
 			$this->add_report_item( gTxt('l10n-op_table',array('{op}'=>'Drop' ,'{table}'=>MLPLanguageHandler::get_native_name_of_lang( $lang ).' ['.$table_name.']')) , $ok , true );
 			}
@@ -5407,7 +5389,7 @@ class MLPWizView extends GBPWizardTabView
 		# language to the site default...
 		$where = "1";
 		$rs = safe_rows_start( 'ID , Title , '.L10N_COL_LANG.' , `'.L10N_COL_GROUP.'`' , 'textpattern' , $where );
-		$count = @mysql_num_rows($rs);
+		$count = @mysqli_num_rows($rs);
 
 		$i = 0;
 		if( $rs && $count > 0 )
