@@ -1503,49 +1503,46 @@ function _l10n_file_paint( $page )
 	$id = gps( 'id' );
 	assert_int($id);
 	$row = safe_row( '*' , 'txp_file' , "`id`='$id'" );
-	if( $row )
+	foreach( $fields as $field => $attributes )
 		{
-		foreach( $fields as $field => $attributes )
+		$r = '';
+		if( $field === 'title' )
 			{
-			$r = '';
-			if( $field === 'title' )
+				preg_match_all('/<div class="txp-form-field edit-file-title">([^<]*<[^>]*>){8}/', $page, $m);
+				$f = $m[0][0];
+			}
+		else
+			{
+				preg_match_all('/<div class="txp-form-field txp-form-field-textarea edit-file-description">([^<]*<[^>]*>){9}/', $page, $m);
+				$f = $m[0][0];
+			}
+
+		foreach( $langs as $lang )
+			{
+			$field_name = _l10n_make_field_name( $field , $lang );
+
+			if( $lang !== $default )
 				{
-					preg_match_all('/<div class="txp-form-field edit-file-title">([^<]*<[^>]*>){8}/', $page, $m);
-					$f = $m[0][0];
-				}
-			else
-				{
-					preg_match_all('/<div class="txp-form-field txp-form-field-textarea edit-file-description">([^<]*<[^>]*>){9}/', $page, $m);
-					$f = $m[0][0];
-				}
-	
-			foreach( $langs as $lang )
-				{
-				$field_name = _l10n_make_field_name( $field , $lang );
-	
-				if( $lang !== $default )
+				$full_name = MLPLanguageHandler::get_native_name_of_lang( $lang );
+				$dir = MLPLanguageHandler::get_lang_direction_markup( $lang );
+
+				if( $field === 'title' )
 					{
-					$full_name = MLPLanguageHandler::get_native_name_of_lang( $lang );
-					$dir = MLPLanguageHandler::get_lang_direction_markup( $lang );
-	
-					if( $field === 'title' )
-						{
-						$r .= '<div class="txp-form-field edit-file-title">';
-						$r .= '<div class="txp-form-field-label"><label for="file_title_'.$lang.'">'.gTxt('title').' ['.$full_name.']</label></div>';
-						$r .= '<div class="txp-form-field-value"><input type="text" id="file_title_'.$lang.'" name="'.$field_name.'" '.$dir.' value="'.$row[$field_name].'" size="'.INPUT_REGULAR.'" /></div>';
-						$r .= '</div>';
-						}
-					else
-						{
-						$r .= '<div class="txp-form-field txp-form-field-textarea edit-file-description">';
-						$r .= '<div class="txp-form-field-label"><label for="file_description_'.$lang.'">'.gTxt('description').' ['.$full_name.']</label></div>';
-						$r .= '<div class="txp-form-field-value"><textarea id="file_description_'.$lang.'" '.$dir.' name="'.$field_name .'" cols="'.INPUT_LARGE.'" rows="'.INPUT_XSMALL.'">'.$row[$field_name].'</textarea></div>';
-						$r .= '</div>';
-						}
+					$r .= '<div class="txp-form-field edit-file-title">';
+					$r .= '<div class="txp-form-field-label"><label for="file_title_'.$lang.'">'.gTxt('title').' ['.$full_name.']</label></div>';
+					$r .= '<div class="txp-form-field-value"><input type="text" id="file_title_'.$lang.'" name="'.$field_name.'" '.$dir.' value="'.$row[$field_name].'" size="'.INPUT_REGULAR.'" /></div>';
+					$r .= '</div>';
+					}
+				else
+					{
+					$r .= '<div class="txp-form-field txp-form-field-textarea edit-file-description">';
+					$r .= '<div class="txp-form-field-label"><label for="file_description_'.$lang.'">'.gTxt('description').' ['.$full_name.']</label></div>';
+					$r .= '<div class="txp-form-field-value"><textarea id="file_description_'.$lang.'" '.$dir.' name="'.$field_name .'" cols="'.INPUT_LARGE.'" rows="'.INPUT_XSMALL.'">'.$row[$field_name].'</textarea></div>';
+					$r .= '</div>';
 					}
 				}
-				$page = str_replace( $f , $f.n.$r , $page );
 			}
+			$page = str_replace( $f , $f.n.$r , $page );
 		}
 
 	return $page;
