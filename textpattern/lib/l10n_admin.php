@@ -1368,30 +1368,27 @@ function _l10n_category_paint( $page )
 	$id = gps( 'id' );
 	assert_int($id);
 	$row = safe_row( '*' , 'txp_category' , "`id`='$id'" );
-	if( $row )
+	preg_match_all('/<div class="txp-form-field edit-category-title">([^<]*<[^>]*>){8}/', $page, $m);
+	$f = $m[0][0];
+	
+	foreach( $fields as $field => $attributes )
 		{
-		preg_match_all('/<div class="txp-form-field edit-category-title">([^<]*<[^>]*>){8}/', $page, $m);
-		$f = $m[0][0];
-		
-		foreach( $fields as $field => $attributes )
+		$r = '';
+		foreach( $langs as $lang )
 			{
-			$r = '';
-			foreach( $langs as $lang )
+			$full_name = MLPLanguageHandler::get_native_name_of_lang( $lang );
+			$dir = MLPLanguageHandler::get_lang_direction_markup( $lang );
+			
+			if( $lang !== $default )
 				{
-				$full_name = MLPLanguageHandler::get_native_name_of_lang( $lang );
-				$dir = MLPLanguageHandler::get_lang_direction_markup( $lang );
-				
-				if( $lang !== $default )
-					{
-					$field_name = _l10n_make_field_name( $field , $lang );
-					$r .= '<div class="txp-form-field edit-category-title">';
-					$r .= '<div class="txp-form-field-label"><label for="category_title_'.$lang.'">'.gTxt($row['type'].'_category_title').' ['. $full_name .']</label></div>';
-					$r .= '<div class="txp-form-field-value"><input id="category_title_'.$lang.'" '.$dir.' name="'. $field_name .'" type="text" size="'.INPUT_REGULAR.'" value="'. $row[$field_name] .'" /></div>';
-					$r .= '</div>';
-					}
+				$field_name = _l10n_make_field_name( $field , $lang );
+				$r .= '<div class="txp-form-field edit-category-title">';
+				$r .= '<div class="txp-form-field-label"><label for="category_title_'.$lang.'">'.gTxt($row['type'].'_category_title').' ['. $full_name .']</label></div>';
+				$r .= '<div class="txp-form-field-value"><input id="category_title_'.$lang.'" '.$dir.' name="'. $field_name .'" type="text" size="'.INPUT_REGULAR.'" value="'. $row[$field_name] .'" /></div>';
+				$r .= '</div>';
 				}
-				$page = str_replace( $f , $f.n.$r , $page );
 			}
+			$page = str_replace( $f , $f.n.$r , $page );
 		}
 
 	return $page;
