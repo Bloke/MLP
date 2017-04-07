@@ -1586,30 +1586,27 @@ function _l10n_link_paint( $page )
 	$id = gps( 'id' );
 	assert_int($id);
 	$row = safe_row( '*' , 'txp_link' , "`id`='$id'" );
-	if( $row )
-		{
-		preg_match_all('/<div class="txp-form-field txp-form-field-textarea edit-link-description">([^<]*<[^>]*>){11}/', $page, $m);
-		$f = $m[0][0];
+	preg_match_all('/<div class="txp-form-field txp-form-field-textarea edit-link-description">([^<]*<[^>]*>){11}/', $page, $m);
+	$f = $m[0][0];
 
-		foreach( $fields as $field => $attributes )
+	foreach( $fields as $field => $attributes )
+		{
+		$r = '';
+		foreach( $langs as $lang )
 			{
-			$r = '';
-			foreach( $langs as $lang )
+			$full_name = MLPLanguageHandler::get_native_name_of_lang( $lang );
+			$dir = MLPLanguageHandler::get_lang_direction_markup( $lang );
+			
+			if( $lang !== $default )
 				{
-				$full_name = MLPLanguageHandler::get_native_name_of_lang( $lang );
-				$dir = MLPLanguageHandler::get_lang_direction_markup( $lang );
-				
-				if( $lang !== $default )
-					{
-					$field_name = _l10n_make_field_name( $field , $lang );
-					$r .= '<div class="txp-form-field txp-form-field-textarea edit-link-description">';
-					$r .= '<div class="txp-form-field-label"><label for="link_description_'.$lang.'">'.gTxt('description').' ['. $full_name .']</label></div>';
-					$r .= '<div class="txp-form-field-value"><textarea id="link_description_'.$lang.'" '.$dir.' name="'.$field_name.'" cols="'.INPUT_LARGE.'" rows="'.INPUT_XSMALL.'">'.$row[$field_name].'</textarea></div>';
-					$r .= '</div>';
-					}
+				$field_name = _l10n_make_field_name( $field , $lang );
+				$r .= '<div class="txp-form-field txp-form-field-textarea edit-link-description">';
+				$r .= '<div class="txp-form-field-label"><label for="link_description_'.$lang.'">'.gTxt('description').' ['. $full_name .']</label></div>';
+				$r .= '<div class="txp-form-field-value"><textarea id="link_description_'.$lang.'" '.$dir.' name="'.$field_name.'" cols="'.INPUT_LARGE.'" rows="'.INPUT_XSMALL.'">'.$row[$field_name].'</textarea></div>';
+				$r .= '</div>';
 				}
-				$page = str_replace( $f , $f.n.$r , $page );
 			}
+			$page = str_replace( $f , $f.n.$r , $page );
 		}
 
 	return $page;
