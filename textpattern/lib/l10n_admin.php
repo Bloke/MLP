@@ -1657,61 +1657,58 @@ function _l10n_image_paint( $page )
 	$id = gps( 'id' );
 	assert_int($id);
 	$row = safe_row( '*' , 'txp_image' , "`id`='$id'" );
-	if( $row )
+	foreach( $fields as $field => $attributes )
 		{
-		foreach( $fields as $field => $attributes )
+		$r = '';
+		if( $field === 'alt' )
 			{
-			$r = '';
-			if( $field === 'alt' )
+				// convert input to textarea - begin
+				preg_match_all('/<div class="txp-form-field edit-image-alt-text">([^<]*<[^>]*>){8}/', $page, $m);
+				$f = $m[0][0];
+				$full_name = MLPLanguageHandler::get_native_name_of_lang( $default );
+				$dir = MLPLanguageHandler::get_lang_direction_markup( $default );
+				$r .= '<div class="txp-form-field edit-image-alt-text">';
+				$r .= '<div class="txp-form-field-label"><label for="image_alt_text">'.gTxt('alt_text').' ['.$full_name.']</label></div>';
+				$r .= '<div class="txp-form-field-value"><textarea id="image_alt_text" '.$dir.' name="'.$field .'" cols="'.INPUT_LARGE.'" rows="'.INPUT_XSMALL.'">'.$row[$field].'</textarea></div>';
+				$r .= '</div>';
+				$page = str_replace( $f , $r , $page );
+				$r = '';
+				// convert input to textarea - end
+				preg_match_all('/<div class="txp-form-field edit-image-alt-text">([^<]*<[^>]*>){9}/', $page, $m);
+				$f = $m[0][0];
+			}
+		else
+			{
+				preg_match_all('/<div class="txp-form-field txp-form-field-textarea edit-image-caption">([^<]*<[^>]*>){9}/', $page, $m);
+				$f = $m[0][0];
+			}
+
+		foreach( $langs as $lang )
+			{
+			$field_name = _l10n_make_field_name( $field , $lang );
+
+			if( $lang !== $default )
 				{
-					// convert input to textarea - begin
-					preg_match_all('/<div class="txp-form-field edit-image-alt-text">([^<]*<[^>]*>){8}/', $page, $m);
-					$f = $m[0][0];
-					$full_name = MLPLanguageHandler::get_native_name_of_lang( $default );
-					$dir = MLPLanguageHandler::get_lang_direction_markup( $default );
-					$r .= '<div class="txp-form-field edit-image-alt-text">';
-					$r .= '<div class="txp-form-field-label"><label for="image_alt_text">'.gTxt('alt_text').' ['.$full_name.']</label></div>';
-					$r .= '<div class="txp-form-field-value"><textarea id="image_alt_text" '.$dir.' name="'.$field .'" cols="'.INPUT_LARGE.'" rows="'.INPUT_XSMALL.'">'.$row[$field].'</textarea></div>';
-					$r .= '</div>';
-					$page = str_replace( $f , $r , $page );
-					$r = '';
-					// convert input to textarea - end
-					preg_match_all('/<div class="txp-form-field edit-image-alt-text">([^<]*<[^>]*>){9}/', $page, $m);
-					$f = $m[0][0];
-				}
-			else
-				{
-					preg_match_all('/<div class="txp-form-field txp-form-field-textarea edit-image-caption">([^<]*<[^>]*>){9}/', $page, $m);
-					$f = $m[0][0];
-				}
-	
-			foreach( $langs as $lang )
-				{
-				$field_name = _l10n_make_field_name( $field , $lang );
-	
-				if( $lang !== $default )
+				$full_name = MLPLanguageHandler::get_native_name_of_lang( $lang );
+				$dir = MLPLanguageHandler::get_lang_direction_markup( $lang );
+
+				if( $field === 'alt' )
 					{
-					$full_name = MLPLanguageHandler::get_native_name_of_lang( $lang );
-					$dir = MLPLanguageHandler::get_lang_direction_markup( $lang );
-	
-					if( $field === 'alt' )
-						{
-						$r .= '<div class="txp-form-field edit-image-alt-text">';
-						$r .= '<div class="txp-form-field-label"><label for="image_alt_text_'.$lang.'">'.gTxt('alt_text').' ['.$full_name.']</label></div>';
-						$r .= '<div class="txp-form-field-value"><textarea id="image_alt_text_'.$lang.'" '.$dir.' name="'.$field_name .'" cols="'.INPUT_LARGE.'" rows="'.INPUT_XSMALL.'">'.$row[$field_name].'</textarea></div>';
-						$r .= '</div>';
-						}
-					else
-						{
-						$r .= '<div class="txp-form-field txp-form-field-textarea edit-image-caption">';
-						$r .= '<div class="txp-form-field-label"><label for="image_caption_'.$lang.'">'.gTxt('caption').' ['.$full_name.']</label></div>';
-						$r .= '<div class="txp-form-field-value"><textarea id="image_caption_'.$lang.'" '.$dir.' name="'.$field_name .'" cols="'.INPUT_LARGE.'" rows="'.INPUT_XSMALL.'">'.$row[$field_name].'</textarea></div>';
-						$r .= '</div>';
-						}
+					$r .= '<div class="txp-form-field edit-image-alt-text">';
+					$r .= '<div class="txp-form-field-label"><label for="image_alt_text_'.$lang.'">'.gTxt('alt_text').' ['.$full_name.']</label></div>';
+					$r .= '<div class="txp-form-field-value"><textarea id="image_alt_text_'.$lang.'" '.$dir.' name="'.$field_name .'" cols="'.INPUT_LARGE.'" rows="'.INPUT_XSMALL.'">'.$row[$field_name].'</textarea></div>';
+					$r .= '</div>';
+					}
+				else
+					{
+					$r .= '<div class="txp-form-field txp-form-field-textarea edit-image-caption">';
+					$r .= '<div class="txp-form-field-label"><label for="image_caption_'.$lang.'">'.gTxt('caption').' ['.$full_name.']</label></div>';
+					$r .= '<div class="txp-form-field-value"><textarea id="image_caption_'.$lang.'" '.$dir.' name="'.$field_name .'" cols="'.INPUT_LARGE.'" rows="'.INPUT_XSMALL.'">'.$row[$field_name].'</textarea></div>';
+					$r .= '</div>';
 					}
 				}
-				$page = str_replace( $f , $f.n.$r , $page );
 			}
+			$page = str_replace( $f , $f.n.$r , $page );
 		}
 	
 	return $page;
