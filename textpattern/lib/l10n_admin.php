@@ -1315,10 +1315,10 @@ function _l10n_build_sql_set( $table )
 	global $l10n_mappings;
 	$langs = MLPLanguageHandler::get_site_langs();
 	$default = MLPLanguageHandler::get_site_default_lang();
-	$set = '';
+	$set = array();
 
 	if( !isset($l10n_mappings[$table]) )
-		return $set;
+		return '';
 
 	$fields = $l10n_mappings[$table];
 	foreach( $fields as $field => $attributes )
