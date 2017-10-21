@@ -39,7 +39,7 @@ l10n styles for other tabs...
 
 .l10n_values_list	{ float: right; width: 50%; }
 .l10n_string_list	{ float: left; width: 25%; }
-.l10n_subtab		{ padding: 0 30px; }
+.l10n_subtab		{ padding: 0 30px; clear:both; }
 .l10n_list			{ float: left; width: 50%; }
 .l10n_edit			{ float: right; width: 50%; }
 .l10n_owner_list	{ float: left; width: 20%; }

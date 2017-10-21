@@ -17,7 +17,7 @@ $plugin['name'] = 'gbp_admin_library';
 // 1 = Plugin help is in raw HTML.  Not recommended.
 # $plugin['allow_html_help'] = 1;
 
-$plugin['version'] = '4.6.0.20160216';
+$plugin['version'] = '4.6.2.20170310';
 $plugin['author'] = 'Graeme Porteous';
 $plugin['author_uri'] = '';
 $plugin['description'] = 'GBP Admin-Side Library';
@@ -416,7 +416,7 @@ class GBPPlugin
 		}
 
 		$out[] = '</p>';
-		$out[] = '</div><div>';
+		$out[] = '</div><div class="clear">';
 
 		echo join('', $out);
 	}
@@ -484,8 +484,7 @@ class GBPPlugin
 				$out[] = $key.'='.urlencode($value);
 		}
 
-		$script = hu.basename(txpath).'/index.php';
-		return $script . (isset($out)
+		return (isset($out)
 			? '?'.join('&', $out)
 			: '');
 	}

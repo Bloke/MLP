@@ -1276,7 +1276,7 @@ class MLPStrings
 		$out[] = '#';
 		$out[] = '# =====================================================================';
 		$out[] = '# ';
-		$out[] = "#@version 4.5.2;".$time;
+		$out[] = "#@version 4.6.2;".$time;
 		$out[] = '# ';
 		foreach( $strings as $string )
 			{
@@ -1523,9 +1523,8 @@ class MLPPlugin extends GBPPlugin
 				#
 				#	Add language tables as needed and populate them as far as possible...
 				#
-				$indexes = "(PRIMARY KEY  (`ID`), KEY `categories_idx` (`Category1`(10),`Category2`(10)), KEY `Posted` (`Posted`), FULLTEXT KEY `searching` (`Title`,`Body`))";
-				$sql = "create table `$full_name` $indexes ENGINE=MyISAM select * from `".PFX."textpattern` where ".L10N_COL_LANG."='$lang'";
-				$ok = safe_query( $sql );
+                                $sql = "CREATE VIEW `$full_name` AS SELECT * FROM `".PFX."textpattern` WHERE ".L10N_COL_LANG."='$lang'";
+                                $ok = safe_query( $sql );
 
 				#
 				#	Add fields for this language...
@@ -1553,7 +1552,7 @@ class MLPPlugin extends GBPPlugin
 				#
 				#	Drop language tables that are no longer needed...
 				#
-				$sql = 'drop table `'.$full_name.'`';
+                                $sql = 'DROP VIEW `'.$full_name.'`';
 				$ok = safe_query( $sql );
 
 				#
@@ -3616,6 +3615,7 @@ class MLPArticleView extends GBPAdminTabView
 			$source['AuthorID'] = $new_author;
 		$source[L10N_COL_LANG] = $target_lang;
 		$source['Status'] = 1;
+		$source['Posted'] = 'now()';
 		$source['LastMod'] = 'now()';
 		$source['feed_time'] = 'now()';
 		$source['uid'] = md5(uniqid(rand(),true));
@@ -3642,15 +3642,6 @@ class MLPArticleView extends GBPAdminTabView
 		#	Add this to the group (article) table...
 		#
 		MLPArticles::add_rendition( $article_id , $rendition_id , $target_lang );
-
-		#
-		#	Add into the rendition table for this lang ensuring this has the ID of the
-		# just added master entry!
-		#
-		$insert[] = '`ID`='.doSlash( $rendition_id );
-		$insert_sql = join( ', ' , $insert );
-		$table_name = _l10n_make_textpattern_name( array( 'long'=>$target_lang ) );
-		safe_insert( $table_name , $insert_sql );
 
 		return $rendition_id;
 		}
@@ -3792,16 +3783,6 @@ class MLPArticleView extends GBPAdminTabView
 		$master_deleted = safe_delete( 'textpattern' , L10N_COL_GROUP."=$article" );
 
 		#
-		#	Delete from the rendition tables...
-		#
-		foreach( $renditions as $rendition )
-			{
-			$lang = $rendition[L10N_COL_LANG];
-			$rendition_table = _l10n_make_textpattern_name( array( 'long'=>$lang ) );
-			safe_delete( $rendition_table , L10N_COL_GROUP."=$article" );
-			}
-
-		#
 		#	Delete from the articles table...
 		#
 		MLPArticles::destroy_article( $article );
@@ -3838,8 +3819,8 @@ class MLPArticleView extends GBPAdminTabView
 		#
 		#	Delete from the correct language rendition table...
 		#
-		$rendition_table = _l10n_make_textpattern_name( array( 'long'=>$lang ) );
-		$rendition_deleted = safe_delete( $rendition_table , "`ID`=$rendition" );
+		# (not required, as tables changed by views)
+		$rendition_deleted = true;
 
 		#
 		#	Delete from the article table...
@@ -4035,6 +4016,7 @@ class MLPArticleView extends GBPAdminTabView
 
 	function render_article_table()
 		{
+		global $article_list_pageby;
 		$event = $this->parent->event;
 
 		#
@@ -5217,9 +5199,8 @@ class MLPWizView extends GBPWizardTabView
 			{
 			$code       = MLPLanguageHandler::compact_code( $lang );
 			$table_name = _l10n_make_textpattern_name( $code );
-			$indexes = "(PRIMARY KEY  (`ID`), KEY `categories_idx` (`Category1`(10),`Category2`(10)), KEY `Posted` (`Posted`), FULLTEXT KEY `searching` (`Title`,`Body`))";
 
-			$sql = "create table `".PFX."$table_name` $indexes ENGINE=MyISAM select * from `".PFX."textpattern` where `".L10N_COL_LANG."`='$lang'";
+                        $sql = "CREATE VIEW `".PFX."$table_name` AS SELECT * FROM `".PFX."textpattern` WHERE ".L10N_COL_LANG."='$lang'";
 			$ok = safe_query( $sql );
 			if (mysqli_error($DB->link) == "Table '".PFX."$table_name' already exists")
 				$ok = 'skipped';
@@ -5377,7 +5358,7 @@ class MLPWizView extends GBPWizardTabView
 			{
 			$code  = MLPLanguageHandler::compact_code( $lang );
 			$table_name = _l10n_make_textpattern_name( $code );
-			$sql = 'drop table `'.PFX.$table_name.'`';
+                        $sql = 'DROP VIEW `'.PFX.$table_name.'`';
 			$ok = safe_query( $sql );
 			$this->add_report_item( gTxt('l10n-op_table',array('{op}'=>'Drop' ,'{table}'=>MLPLanguageHandler::get_native_name_of_lang( $lang ).' ['.$table_name.']')) , $ok , true );
 			}

@@ -91,10 +91,6 @@ if( $l10n_view->installed() )
 			}
 		}
 
-	register_callback('_l10n_category_extend', 'category_ui', 'extend_detail_form');
-	register_callback('_l10n_image_extend',    'image_ui',    'extend_detail_form');
-	register_callback('_l10n_link_extend',     'link_ui',     'extend_detail_form');
-
 	if ($app_mode !== 'async') {
 		ob_start('_l10n_process_admin_page');
 	}
@@ -234,37 +230,9 @@ function _l10n_check_index()
 	}
 function _l10n_post_save( $event , $step )
 {
-	$fields = array();
-	if ($event === 'section')
-	{
-		$fields[] = 'Section';
-	}
-	else if ($event === 'category' && strpos($step, '_save') !== false)
-	{
-		$fields = array('Category1', 'Category2');
-	}
-
-	if (empty($fields))
-	{
-		return false;
-	}
-
-	$old_name = doSlash( ps('old_name') );
-	$name     = doSlash( sanitizeForUrl( ps('name') ) );
-
-	if( $name !== $old_name )
-	{
-		$langs = MLPLanguageHandler::get_site_langs();
-		foreach( $langs as $lang )
-		{
-			$table = _l10n_make_textpattern_name(array('long'=>$lang));
-			foreach ($fields as $field)
-			{
-				$clause = $field . " = '$old_name'" ;
-				safe_update( $table , $field . " = '$name'", $clause );
-			}
-		}
-	}
+	#
+	#	Nothing to do, when tables are replaced by views 
+	#
 }
 
 function _l10n_list_filter( $event, $step )
@@ -306,7 +274,7 @@ function _l10n_list_filter( $event, $step )
 				}
 			}
 			$languages = join( ',' , $selected );
-			_l10n_create_temp_textpattern( $languages );
+//			_l10n_create_temp_textpattern( $languages );
 			break;
 		default:
 			break;
@@ -875,38 +843,15 @@ function _l10n_article_buffer_processor( $buffer )
 
 function _l10n_replace_rendition( $lang , $replace=false , $id='' )
 	{
-	$op = 'INSERT';
-	if( $replace )
-		$op = 'REPLACE';
-
-	if( empty($id) )
-		{
-		if(!empty($GLOBALS['ID']))
-			$id = intval($GLOBALS['ID']);
-		else
-			$id = gps('ID');
-		}
-
-	if( !MLPLanguageHandler::is_valid_code($lang) )
-		{
-		echo br , "Invalid language code '$lang' calculated in _l10n_add_rendition()";
-		return;
-		}
-	$table_name = safe_pfx( _l10n_make_textpattern_name($lang) );
-	$safe_txp = safe_pfx( 'textpattern' );
-
-	$sql = $op." INTO $table_name SELECT * FROM $safe_txp WHERE $safe_txp.ID='$id' LIMIT 1";
-	safe_query( $sql );
+		#
+		#	Nothing to do, when tables are replaced by views 
+		#
 	}
 function _l10n_remove_rendition( $lang , $id )
 	{
-	if( !MLPLanguageHandler::is_valid_code($lang) )
-		{
-		echo br , "Invalid language code '$lang' calculated in _l10n_add_rendition()";
-		return;
-		}
-	$table_name = safe_pfx( _l10n_make_textpattern_name($lang) );
-	safe_delete( $table_name , "`ID`='$id'" );
+		#
+		#	Nothing to do, when tables are replaced by views 
+		#
 	}
 function _l10n_add_rendition_to_article_cb( $event , $step )
 	{
@@ -1129,28 +1074,9 @@ function _l10n_pre_multi_edit_cb( $event , $step )
 
 function _l10n_observe_table_changes( $event , $step )
 {
-	static $l10n_hashes = array();
-
-	if (isset($l10n_hashes['textpattern'])) {
-		$rs = $l10n_hashes['textpattern'];
-	} else {
-		$rs = safe_show('COLUMNS', 'textpattern');
-		$l10n_hashes['textpattern'] = $rs;
-	}
-
-	$txp_table_hash = md5(serialize($l10n_hashes['textpattern']));
-	$previous_hashes = unserialize(get_pref('l10n_hashes'));
-
-	if ($previous_hashes['textpattern'] !== $txp_table_hash) {
-		_l10n_sync_table_definitions( $l10n_hashes );
-//	_l10n_update_dirty_flag( 'DIRTY' );
-	}
-
-	// Regenerate the hash table and stash it
-	$hash_table = array();
-	$hash_table['textpattern'] = $txp_table_hash;
-
-	set_pref('l10n_hashes', serialize($hash_table), 'l10n', PREF_HIDDEN);
+	#
+	#	Nothing to do, when tables are replaced by views 
+	#
 }
 
 function _l10n_check_lang_code( $lang )
@@ -1200,25 +1126,39 @@ function _l10n_check_lang_table( $lang )
 
 	$code = $result;
 	$table_name = _l10n_make_textpattern_name( $code );
-	if( safe_query( "SHOW COLUMNS FROM `$table_name`" ) )
-		{
-		return true;
+	$type = NULL;
+	if ( $r = safe_query( 'SHOW FULL TABLES') ) {
+		$type = 'NONE';
+		if ( mysqli_num_rows( $r ) > 0 ) {
+			while ( $a = mysqli_fetch_row( $r ) ) {
+				if ( $a[0] === PFX.$table_name ) {
+					$type = strtoupper($a[1]);
+				}
+			}
+	
+			mysqli_free_result( $r );
 		}
-	return array($code, $table_name);
+	}
+	
+	return array($code, $table_name, $type);
 	}
 function _l10n_generate_lang_table( $lang )
 	{
 	$result = _l10n_check_lang_table( $lang );
 	if( !is_array($result) ) return $result;
 
-	list($code, $table_name) = $result;
-	$where = ' WHERE `'.L10N_COL_LANG."`='$lang'";
-
-	safe_query( 'LOCK TABLES `'.PFX.$table_name.'` WRITE' );
-	safe_query( 'CREATE TABLE `'.PFX.$table_name.'` LIKE `'.PFX.'textpattern`' );
-	safe_query( 'INSERT INTO `'.PFX.$table_name.'` SELECT * FROM `'.PFX.'textpattern`'.$where );
-	safe_query( 'OPTIMIZE TABLE `'.PFX.$table_name.'`' );
-	safe_query( 'UNLOCK TABLES' );
+	list($code, $table_name, $type) = $result;
+	switch( $type ) {
+		case 'BASE TABLE':
+			safe_query( 'DROP TABLE `'.PFX.$table_name.'`' );
+			
+		case 'NONE':
+			$where = ' WHERE `'.L10N_COL_LANG."`='$lang'";
+			safe_query( 'CREATE VIEW `'.PFX.$table_name.'` AS SELECT * FROM `'.PFX.'textpattern`'.$where );
+			
+		case 'VIEW':
+		default:
+	}
 	}
 
 function _l10n_check_localise_table( $lang )
@@ -1293,88 +1233,9 @@ function _l10n_generate_localise_table_fields( $lang )
 */
 function _l10n_sync_table_definitions( $source = array() )
 {
-	if (!is_array($source)) {
-		return false;
-	}
-
-	foreach ($source as $table => $definition)
-	{
-//dmp($definition);
-		switch ($table)
-		{
-			case 'textpattern':
-				$langs = MLPLanguageHandler::get_site_langs();
-
-				foreach ($langs as $lang)
-				{
-					$sql = array();
-					$safe_lang = _l10n_check_lang_code( $lang );
-					if( !is_string($safe_lang) ) continue;
-
-					$table = _l10n_make_textpattern_name(array('long' => $lang));
-					$rs = safe_show('COLUMNS', $table);
-
-					foreach ($definition as $def)
-					{
-						$field = $def['Field'];
-
-						$type = $def['Type'];
-						$null = $def['Null'];
-						$default = $def['Default'];
-						$extra = $def['Extra'];
-
-						$found = false;
-						foreach ($rs as $idx => $lang_field) {
-							if ( $lang_field['Field'] === $field) {
-								$found = $idx;
-								break;
-							}
-						}
-
-						// ID fields can't be altered here due to auto_increment differences
-						// This can't be done earlier as we don't know the position in the destination table until now
-						if ($field === 'ID') {
-							unset($rs[$found]);
-							continue;
-						}
-
-						if ($found !== false) {
-							// Field exists in destination table so update its definition if anything's changed
-							$dest_type = $rs[$found]['Type'];
-							$dest_null = $rs[$found]['Null'];
-							$dest_default = $rs[$found]['Default'];
-							$dest_extra = $rs[$found]['Extra'];
-
-							if ( $type !== $dest_type
-									|| $null !== $dest_null
-									|| $default !== $dest_default
-									|| $extra !== $dest_extra )
-								{
-									$sql[] = 'MODIFY ' .$field. ' ' .$type . ($null === 'NO' ? ' NOT NULL' : ' NULL') . ($default ? ' DEFAULT "'.$default.'"' : '') . ' ' .$extra;
-								}
-
-							// Removing each found item from the destination table serves two purposes:
-							// 1) it speeds the loop up as things move forward
-							// 2) it means that any fields left over by the time the loop ends are fields that need removing
-							unset($rs[$found]);
-
-						} else {
-							// New field (or possibly a renamed field, but if that happens there are more urgent things to worry about!)
-							$sql[] = 'ADD ' .$field. ' ' .$type . ($null === 'NO' ? ' NOT NULL' : ' NULL') . ($default ? ' DEFAULT "'.$default.'"' : '') . ' ' .$extra;
-						}
-					}
-
-					// Extraneous fields: remove them
-					foreach ($rs as $def) {
-						$sql[] = 'DROP ' . $def['Field'];
-					}
-					foreach ($sql as $statement) {
-						safe_alter($table, $statement);
-					}
-				}
-			break;
-		}
-	}
+	#
+	#	Nothing to do, when tables are replaced by views 
+	#
 }
 
 function _l10n_pre_discuss_multi_edit( $event , $step )
@@ -1454,10 +1315,10 @@ function _l10n_build_sql_set( $table )
 	global $l10n_mappings;
 	$langs = MLPLanguageHandler::get_site_langs();
 	$default = MLPLanguageHandler::get_site_default_lang();
-	$set = '';
+	$set = array();
 
 	if( !isset($l10n_mappings[$table]) )
-		return $set;
+		return '';
 
 	$fields = $l10n_mappings[$table];
 	foreach( $fields as $field => $attributes )
@@ -1480,43 +1341,9 @@ function _l10n_build_sql_set( $table )
 	return join( ', ', $set );
 	}
 
-function _l10n_category_extend ($evt, $stp, $data, $rs) {
-	$default = MLPLanguageHandler::get_site_default_lang();
-
-	#
-	#	Insert the remaining language fields...
-	#
-	global $l10n_mappings;
-	$langs = MLPLanguageHandler::get_site_langs();
- 	$fields = $l10n_mappings['txp_category'];
-	$r = '';
-	$id = $rs['id'];
-
-	foreach( $fields as $field => $attributes )
-		{
-		foreach( $langs as $lang )
-			{
-			$full_name = MLPLanguageHandler::get_native_name_of_lang( $lang );
-			$dir = MLPLanguageHandler::get_lang_direction_markup( $lang );
- 			if( $lang !== $default )
-				{
-				$field_name = _l10n_make_field_name( $field , $lang );
-				$r .= '<p class="edit-category-title"><span class="edit-label"><label for="category_title_'.$lang.'">['.$full_name.']</label></span>';
-				$r .= '<span class="edit-value"><input id="category_title_'.$lang.'" name="' . $field_name . '" value="'.$rs[$field_name].'" size="'.INPUT_REGULAR.'" type="text" '.$dir.' />';
-				$r .= '</span></p>'.n;
-				}
-			}
-		}
-	return $r;
-}
-
 function _l10n_category_paint( $page )
 	{
 	$default = MLPLanguageHandler::get_site_default_lang();
-
-	$id = gps( 'id' );
-	assert_int($id);
-	$row = safe_row( '*' , 'txp_category' , "`id`='$id'" );
 
 	#
 	#	Insert the default title field's language's direction...
@@ -1531,6 +1358,38 @@ function _l10n_category_paint( $page )
 	$f = '<label for="category_title">'.gTxt($row['type'].'_category_title');
 	$r = ' ['.MLPLanguageHandler::get_native_name_of_lang( $default ).']';
 	$page = str_replace( $f , $f.sp.$r , $page );
+
+	#
+	#	Insert the remaining language fields...
+	#
+	global $l10n_mappings;
+	$langs = MLPLanguageHandler::get_site_langs();
+ 	$fields = $l10n_mappings['txp_category'];
+	$id = gps( 'id' );
+	assert_int($id);
+	$row = safe_row( '*' , 'txp_category' , "`id`='$id'" );
+	preg_match_all('/<div class="txp-form-field edit-category-title">([^<]*<[^>]*>){8}/', $page, $m);
+	$f = $m[0][0];
+	
+	foreach( $fields as $field => $attributes )
+		{
+		$r = '';
+		foreach( $langs as $lang )
+			{
+			$full_name = MLPLanguageHandler::get_native_name_of_lang( $lang );
+			$dir = MLPLanguageHandler::get_lang_direction_markup( $lang );
+			
+			if( $lang !== $default )
+				{
+				$field_name = _l10n_make_field_name( $field , $lang );
+				$r .= '<div class="txp-form-field edit-category-title">';
+				$r .= '<div class="txp-form-field-label"><label for="category_title_'.$lang.'">'.gTxt($row['type'].'_category_title').' ['. $full_name .']</label></div>';
+				$r .= '<div class="txp-form-field-value"><input id="category_title_'.$lang.'" '.$dir.' name="'. $field_name .'" type="text" size="'.INPUT_REGULAR.'" value="'. $row[$field_name] .'" /></div>';
+				$r .= '</div>';
+				}
+			}
+			$page = str_replace( $f , $f.n.$r , $page );
+		}
 
 	return $page;
 	}
@@ -1557,41 +1416,6 @@ function _l10n_section_paint( $page )
 	$default = MLPLanguageHandler::get_site_default_lang();
 
 	#
-	#	Insert the remaining language title fields...
-	#
-	global $l10n_mappings, $prefs;
-	$langs = MLPLanguageHandler::get_site_langs();
- 	$fields = $l10n_mappings['txp_section'];
-	$editing = gps( 'name' );
-	$row = safe_row( '*' , 'txp_section' , "`name`='".doSlash($editing)."'" );
-	if( $row )
-		{
-		$ver = $prefs['version'];
-
-		$name  = txpspecialchars($row['name']);
-		$title = txpspecialchars($row['title']);
-		$f = 'id="section_title" /></span></p>';
-
-		foreach( $fields as $field => $attributes )
-			{
-			$r = '';
-			foreach( $langs as $lang )
-				{
-				$full_name = MLPLanguageHandler::get_native_name_of_lang( $lang );
-				$dir = MLPLanguageHandler::get_lang_direction_markup( $lang );
-				if( $lang !== $default )
-					{
-					$field_name = _l10n_make_field_name( $field , $lang );
-					$field_value = $row[$field_name];
-					$r .= '<p class="edit-section-title"><span class="edit-label"><label for="section_title_'.$lang.'">['. $full_name .']</label></span>';
-					$r .= '<span class="edit-value"><input id="section_title_'.$lang.'" type="text" size="'.INPUT_REGULAR.'" name="'. $field_name .'" value="'. $row[$field_name] .'"'.$dir.' /></span></p>';
-					}
-				}
-				$page = str_replace( $f , $f.n.$r , $page );
-			}
-		}
-
-	#
 	#	Insert the default title field's language's direction...
 	#
 	$dir = MLPLanguageHandler::get_lang_direction_markup( $default ) . ' ';
@@ -1604,9 +1428,44 @@ function _l10n_section_paint( $page )
 	$f = '">'.gTxt('section_longtitle');
 	$r = '['.MLPLanguageHandler::get_native_name_of_lang( $default ) . ']';
 	$page = str_replace( $f , $f.n.$r , $page );
+	
+	#
+	#	Insert the remaining language title fields...
+	#
+	global $l10n_mappings, $prefs;
+	$langs = MLPLanguageHandler::get_site_langs();
+ 	$fields = $l10n_mappings['txp_section'];
+	$editing = gps( 'name' );
+	$row = safe_row( '*' , 'txp_section' , "`name`='".doSlash($editing)."'" );
+	if( $row )
+		{
+		preg_match_all('/<div class="txp-form-field edit-section-longtitle">([^<]*<[^>]*>){8}/', $page, $m);
+		$f = $m[0][0];
+
+		foreach( $fields as $field => $attributes )
+			{
+			$r = '';
+			foreach( $langs as $lang )
+				{
+				$full_name = MLPLanguageHandler::get_native_name_of_lang( $lang );
+				$dir = MLPLanguageHandler::get_lang_direction_markup( $lang );
+				
+				if( $lang !== $default )
+					{
+					$field_name = _l10n_make_field_name( $field , $lang );
+					$r .= '<div class="txp-form-field edit-section-longtitle">';
+					$r .= '<div class="txp-form-field-label"><label for="section_title_'.$lang.'">'.gTxt('section_longtitle').' ['. $full_name .']</label></div>';
+					$r .= '<div class="txp-form-field-value"><input id="section_title_'.$lang.'" '.$dir.' name="'. $field_name .'" type="text" size="'.INPUT_REGULAR.'" value="'. $row[$field_name] .'" /></div>';
+					$r .= '</div>';
+					}
+				}
+				$page = str_replace( $f , $f.n.$r , $page );
+			}
+		}
 
 	return $page;
 	}
+
 function _l10n_section_save( $event , $step )
 	{
 	$id_name = 'name';
@@ -1622,47 +1481,6 @@ function _l10n_file_paint( $page )
 	$default = MLPLanguageHandler::get_site_default_lang();
 
 	#
-	#	Insert the remaining language fields...
-	#
-	global $l10n_mappings;
-	$langs = MLPLanguageHandler::get_site_langs();
- 	$fields = $l10n_mappings['txp_file'];
-	$id = gps( 'id' );
-	assert_int($id);
-	$row = safe_row( '*' , 'txp_file' , "`id`='$id'" );
-	$dir = MLPLanguageHandler::get_lang_direction_markup( $default ) . ' ';
-	foreach( $fields as $field => $attributes )
-		{
-		$r = '';
-
-		foreach( $langs as $lang )
-			{
-			$field_name = _l10n_make_field_name( $field , $lang );
-
-			if( $lang !== $default )
-				{
-				$full_name = MLPLanguageHandler::get_native_name_of_lang( $lang );
-				$dir = MLPLanguageHandler::get_lang_direction_markup( $lang );
-
-				if( $field === 'title' )
-					{
-					$r .= '<p class="edit-file-title"><span class="edit-label"><label for="file_title_'.$lang.'">['.$full_name.']</label></span>';
-					$r .= '<span class="edit-value"><input type="text" id="file_title_'.$lang.'" name="'.$field_name.'" '.$dir.' value="'.$row[$field_name].'" size="'.INPUT_REGULAR.'" /></span></p>'.n;
-					$f = '<p class="edit-file-category">';
-					}
-				else
-					{
-					$r .= '<p class="edit-file-description"><span class="edit-label"><label for="file_description_'.$lang.'">['.$full_name.']</label></span>';
-					$r .= '<textarea id="file_description_'.$lang.'" name="'.$field_name .'" cols="'.INPUT_LARGE.'" rows="'.INPUT_XSMALL.'"'.$dir.'>';
-					$r .= $row[$field_name].'</textarea></p>'.n;
-					$f = '<fieldset class="file-created">';
-					}
-				}
-			}
-			$page = str_replace( $f , $r.n.$f , $page );
-		}
-
-	#
 	#	Insert the default description field's language name...
 	#
 	$f = '<label for="file_description">'.gTxt('description');
@@ -1675,6 +1493,57 @@ function _l10n_file_paint( $page )
 	$f = '<label for="file_title">'.gTxt('title');
 	$r = ' ['.MLPLanguageHandler::get_native_name_of_lang( $default ) . ']';
 	$page = str_replace( $f , $f.sp.$r , $page );
+	
+	#
+	#	Insert the remaining language fields...
+	#
+	global $l10n_mappings;
+	$langs = MLPLanguageHandler::get_site_langs();
+ 	$fields = $l10n_mappings['txp_file'];
+	$id = gps( 'id' );
+	assert_int($id);
+	$row = safe_row( '*' , 'txp_file' , "`id`='$id'" );
+	foreach( $fields as $field => $attributes )
+		{
+		$r = '';
+		if( $field === 'title' )
+			{
+				preg_match_all('/<div class="txp-form-field edit-file-title">([^<]*<[^>]*>){8}/', $page, $m);
+				$f = $m[0][0];
+			}
+		else
+			{
+				preg_match_all('/<div class="txp-form-field txp-form-field-textarea edit-file-description">([^<]*<[^>]*>){9}/', $page, $m);
+				$f = $m[0][0];
+			}
+
+		foreach( $langs as $lang )
+			{
+			$field_name = _l10n_make_field_name( $field , $lang );
+
+			if( $lang !== $default )
+				{
+				$full_name = MLPLanguageHandler::get_native_name_of_lang( $lang );
+				$dir = MLPLanguageHandler::get_lang_direction_markup( $lang );
+
+				if( $field === 'title' )
+					{
+					$r .= '<div class="txp-form-field edit-file-title">';
+					$r .= '<div class="txp-form-field-label"><label for="file_title_'.$lang.'">'.gTxt('title').' ['.$full_name.']</label></div>';
+					$r .= '<div class="txp-form-field-value"><input type="text" id="file_title_'.$lang.'" name="'.$field_name.'" '.$dir.' value="'.$row[$field_name].'" size="'.INPUT_REGULAR.'" /></div>';
+					$r .= '</div>';
+					}
+				else
+					{
+					$r .= '<div class="txp-form-field txp-form-field-textarea edit-file-description">';
+					$r .= '<div class="txp-form-field-label"><label for="file_description_'.$lang.'">'.gTxt('description').' ['.$full_name.']</label></div>';
+					$r .= '<div class="txp-form-field-value"><textarea id="file_description_'.$lang.'" '.$dir.' name="'.$field_name .'" cols="'.INPUT_LARGE.'" rows="'.INPUT_XSMALL.'">'.$row[$field_name].'</textarea></div>';
+					$r .= '</div>';
+					}
+				}
+			}
+			$page = str_replace( $f , $f.n.$r , $page );
+		}
 
 	return $page;
 	}
@@ -1689,38 +1558,6 @@ function _l10n_file_save( $event , $step )
 	$set = _l10n_build_sql_set( $table );
 	safe_update( $table , $set , $where );
 	}
-
-function _l10n_link_extend ($evt, $stp, $data, $rs) {
-	$default = MLPLanguageHandler::get_site_default_lang();
-
-	#
-	#	Insert the remaining language fields...
-	#
-	global $l10n_mappings;
-	$langs = MLPLanguageHandler::get_site_langs();
- 	$fields = $l10n_mappings['txp_link'];
-	$r = '';
-	$id = $rs['id'];
-
-	foreach( $fields as $field => $attributes )
-		{
-		foreach( $langs as $lang )
-			{
-			$full_name = MLPLanguageHandler::get_native_name_of_lang( $lang );
-			$dir = MLPLanguageHandler::get_lang_direction_markup( $lang );
- 			if( $lang !== $default )
-				{
-				$field_name = _l10n_make_field_name( $field , $lang );
-				$r .= '<p class="edit-link-description"><span class="edit-label">';
-				$r .= '<label for="link_description_'.$lang.'">['.$full_name.']</label></span>';
-				$r .= '<textarea id="link_description_'.$lang.'" name="'.$field_name .'" cols="'.INPUT_LARGE.'" rows="'.INPUT_SMALL.'"'.$dir.'>';
-				$r .= $rs[$field_name];
-				$r .= '</textarea></p>'.n;
-				}
-			}
-		}
-	return $r;
-}
 
 function _l10n_link_paint( $page )
 	{
@@ -1739,9 +1576,42 @@ function _l10n_link_paint( $page )
 	$f = 'for="link_description">'.gTxt('description');
 	$r = '['.MLPLanguageHandler::get_native_name_of_lang( $default ) . ']';
 	$page = str_replace( $f , $f.n.$r , $page );
+	
+	#
+	#	Insert the remaining language fields...
+	#
+	global $l10n_mappings;
+	$langs = MLPLanguageHandler::get_site_langs();
+ 	$fields = $l10n_mappings['txp_link'];
+	$id = gps( 'id' );
+	assert_int($id);
+	$row = safe_row( '*' , 'txp_link' , "`id`='$id'" );
+	preg_match_all('/<div class="txp-form-field txp-form-field-textarea edit-link-description">([^<]*<[^>]*>){11}/', $page, $m);
+	$f = $m[0][0];
+
+	foreach( $fields as $field => $attributes )
+		{
+		$r = '';
+		foreach( $langs as $lang )
+			{
+			$full_name = MLPLanguageHandler::get_native_name_of_lang( $lang );
+			$dir = MLPLanguageHandler::get_lang_direction_markup( $lang );
+			
+			if( $lang !== $default )
+				{
+				$field_name = _l10n_make_field_name( $field , $lang );
+				$r .= '<div class="txp-form-field txp-form-field-textarea edit-link-description">';
+				$r .= '<div class="txp-form-field-label"><label for="link_description_'.$lang.'">'.gTxt('description').' ['. $full_name .']</label></div>';
+				$r .= '<div class="txp-form-field-value"><textarea id="link_description_'.$lang.'" '.$dir.' name="'.$field_name.'" cols="'.INPUT_LARGE.'" rows="'.INPUT_XSMALL.'">'.$row[$field_name].'</textarea></div>';
+				$r .= '</div>';
+				}
+			}
+			$page = str_replace( $f , $f.n.$r , $page );
+		}
 
 	return $page;
 	}
+
 function _l10n_link_save( $event , $step )
 	{
 	$id_name = 'id';
@@ -1752,45 +1622,6 @@ function _l10n_link_save( $event , $step )
 	$set = _l10n_build_sql_set( $table );
 	safe_update( $table , $set , $where );
 	}
-
-function _l10n_image_extend ($evt, $stp, $data, $rs) {
-	$default = MLPLanguageHandler::get_site_default_lang();
-
-	#
-	#	Insert the remaining language fields...
-	#
-	global $l10n_mappings;
-	$langs = MLPLanguageHandler::get_site_langs();
- 	$fields = $l10n_mappings['txp_image'];
-	$id = $rs['id'];
-	$r = '';
-	foreach( $langs as $lang )
-		{
-		if( $lang !== $default )
-			{
-			$full_name = MLPLanguageHandler::get_native_name_of_lang( $lang );
-			$dir = MLPLanguageHandler::get_lang_direction_markup( $lang );
-			foreach( $fields as $field => $attributes )
-				{
-				$field_name = _l10n_make_field_name( $field , $lang );
-
-				if( $field === 'alt' )
-					{
-					$r .= '<p class="edit-image-alt-text"><span class="edit-label"><label for="image_alt_text_'.$lang.'">'.gTxt('alt_text').' ['.$full_name.']</label></span>';
-					$r .= '<span class="edit-value"><input type="text" name="'.$field_name.'" '.$dir.' value="'.$rs[$field_name].'" size="'.INPUT_REGULAR.'" id="image_alt_text_'.$lang.'" /></span></p>'.n;
-					}
-				else
-					{
-					$r .= '<p class="edit-image-caption"><span class="edit-label"><label for="image_caption_'.$lang.'">'.gTxt('caption').' ['.$full_name.']</label></span>';
-					$r .= '<textarea id="image_caption_'.$lang.'" name="'.$field_name .'" cols="'.INPUT_LARGE.'" rows="'.INPUT_XSMALL.'"'.$dir.'>';
-					$r .= $rs[$field_name].'</textarea></p>'.n;
-					}
-				}
-			}
-		}
-
-	return $r;
-}
 
 function _l10n_image_paint( $page )
 	{
@@ -1814,8 +1645,72 @@ function _l10n_image_paint( $page )
 	$f = 'for="image_caption">'.gTxt('caption');
 	$page = str_replace( $f , $f.n.$r , $page );
 
+	#
+	#	Insert the remaining language fields...
+	#
+	global $l10n_mappings;
+	$langs = MLPLanguageHandler::get_site_langs();
+ 	$fields = $l10n_mappings['txp_image'];
+	$id = gps( 'id' );
+	assert_int($id);
+	$row = safe_row( '*' , 'txp_image' , "`id`='$id'" );
+	foreach( $fields as $field => $attributes )
+		{
+		$r = '';
+		if( $field === 'alt' )
+			{
+				// convert input to textarea - begin
+				preg_match_all('/<div class="txp-form-field edit-image-alt-text">([^<]*<[^>]*>){8}/', $page, $m);
+				$f = $m[0][0];
+				$full_name = MLPLanguageHandler::get_native_name_of_lang( $default );
+				$dir = MLPLanguageHandler::get_lang_direction_markup( $default );
+				$r .= '<div class="txp-form-field edit-image-alt-text">';
+				$r .= '<div class="txp-form-field-label"><label for="image_alt_text">'.gTxt('alt_text').' ['.$full_name.']</label></div>';
+				$r .= '<div class="txp-form-field-value"><textarea id="image_alt_text" '.$dir.' name="'.$field .'" cols="'.INPUT_LARGE.'" rows="'.INPUT_XSMALL.'">'.$row[$field].'</textarea></div>';
+				$r .= '</div>';
+				$page = str_replace( $f , $r , $page );
+				$r = '';
+				// convert input to textarea - end
+				preg_match_all('/<div class="txp-form-field edit-image-alt-text">([^<]*<[^>]*>){9}/', $page, $m);
+				$f = $m[0][0];
+			}
+		else
+			{
+				preg_match_all('/<div class="txp-form-field txp-form-field-textarea edit-image-caption">([^<]*<[^>]*>){9}/', $page, $m);
+				$f = $m[0][0];
+			}
+
+		foreach( $langs as $lang )
+			{
+			$field_name = _l10n_make_field_name( $field , $lang );
+
+			if( $lang !== $default )
+				{
+				$full_name = MLPLanguageHandler::get_native_name_of_lang( $lang );
+				$dir = MLPLanguageHandler::get_lang_direction_markup( $lang );
+
+				if( $field === 'alt' )
+					{
+					$r .= '<div class="txp-form-field edit-image-alt-text">';
+					$r .= '<div class="txp-form-field-label"><label for="image_alt_text_'.$lang.'">'.gTxt('alt_text').' ['.$full_name.']</label></div>';
+					$r .= '<div class="txp-form-field-value"><textarea id="image_alt_text_'.$lang.'" '.$dir.' name="'.$field_name .'" cols="'.INPUT_LARGE.'" rows="'.INPUT_XSMALL.'">'.$row[$field_name].'</textarea></div>';
+					$r .= '</div>';
+					}
+				else
+					{
+					$r .= '<div class="txp-form-field txp-form-field-textarea edit-image-caption">';
+					$r .= '<div class="txp-form-field-label"><label for="image_caption_'.$lang.'">'.gTxt('caption').' ['.$full_name.']</label></div>';
+					$r .= '<div class="txp-form-field-value"><textarea id="image_caption_'.$lang.'" '.$dir.' name="'.$field_name .'" cols="'.INPUT_LARGE.'" rows="'.INPUT_XSMALL.'">'.$row[$field_name].'</textarea></div>';
+					$r .= '</div>';
+					}
+				}
+			}
+			$page = str_replace( $f , $f.n.$r , $page );
+		}
+	
 	return $page;
 	}
+
 function _l10n_image_save( $event , $step )
 	{
 	$id_name = 'id';
