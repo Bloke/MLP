@@ -4016,6 +4016,7 @@ class MLPArticleView extends GBPAdminTabView
 
 	function render_article_table()
 		{
+		global $article_list_pageby;
 		$event = $this->parent->event;
 
 		#
